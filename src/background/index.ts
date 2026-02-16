@@ -8,6 +8,7 @@ import { initializeMessageHandlers } from './handlers'
 import { initializeAlarmHandlers, setupPeriodicAlarms } from './alarms'
 import { rebuildRules } from './dnr-manager'
 import { runMigrations, needsMigration } from '../shared/storage/migrations'
+import { initializeStorageListener } from './storage-listener'
 import { initFocusSessions, getCurrentSession, SessionState } from '../shared/domain/focus-sessions'
 import { getSites, getTempWhitelist } from '../shared/storage/storage'
 import { normalizeHost } from '../shared/utils/domain'
@@ -162,11 +163,28 @@ async function handleTabUpdate(
 
     // Get focus session sites
     const focusSession = await getCurrentSession()
-    const focusSessionSites =
-      focusSession && focusSession.state === SessionState.WORKING
-        ? new Set(focusSession.sitesToBlock)
-        : new Set<string>()
+    const isFocusWorking = focusSession && focusSession.state === SessionState.WORKING
+    const focusMode = isFocusWorking ? focusSession.mode || 'blocklist' : 'blocklist'
+    const focusSessionSites = isFocusWorking ? new Set(focusSession.sitesToBlock) : new Set<string>()
 
+    // WHITELIST MODE LOGIC
+    if (focusMode === 'whitelist' && isFocusWorking) {
+      // If hostname is NOT in allowed list (focusSessionSites) AND NOT in temp whitelist -> BLOCK
+      if (!focusSessionSites.has(hostname) && !tempWhitelistedHosts.has(hostname)) {
+        const blockedUrl = browser.runtime.getURL(
+          `src/pages/blocked/index.html?url=${encodeURIComponent(tab.url)}`
+        )
+        await browser.tabs.update(tabId, { url: blockedUrl })
+        console.log('[Background] Redirected tab (whitelist mode):', hostname)
+        return
+      }
+
+      // If it IS in the allowed list, we do nothing (allow it)
+      // We skip the general blocklist check because whitelist mode overrides everything
+      return
+    }
+
+    // BLOCKLIST MODE LOGIC
     // Check if this site should be blocked
     // First check focus session sites (they have priority)
     if (focusSessionSites.has(hostname) && !tempWhitelistedHosts.has(hostname)) {
@@ -287,11 +305,25 @@ async function handleHistoryStateUpdate(
 
     // Get focus session sites
     const focusSession = await getCurrentSession()
-    const focusSessionSites =
-      focusSession && focusSession.state === SessionState.WORKING
-        ? new Set(focusSession.sitesToBlock)
-        : new Set<string>()
+    const isFocusWorking = focusSession && focusSession.state === SessionState.WORKING
+    const focusMode = isFocusWorking ? focusSession.mode || 'blocklist' : 'blocklist'
+    const focusSessionSites = isFocusWorking ? new Set(focusSession.sitesToBlock) : new Set<string>()
 
+    // WHITELIST MODE LOGIC
+    if (focusMode === 'whitelist' && isFocusWorking) {
+      if (!focusSessionSites.has(hostname) && !tempWhitelistedHosts.has(hostname)) {
+        const blockedUrl = browser.runtime.getURL(
+          `src/pages/blocked/index.html?url=${encodeURIComponent(details.url)}`
+        )
+        console.log('[Background] ⛔ Blocking SPA navigation (whitelist):', hostname, 'redirecting to:', blockedUrl)
+        await browser.tabs.update(details.tabId, { url: blockedUrl })
+        return
+      }
+      // Allowed
+      return
+    }
+
+    // BLOCKLIST MODE LOGIC
     // Check if this site should be blocked
     // First check focus session sites (they have priority)
     if (focusSessionSites.has(hostname) && !tempWhitelistedHosts.has(hostname)) {
@@ -371,6 +403,9 @@ async function initialize(): Promise<void> {
     browser.tabs.onUpdated.addListener(handleTabUpdate)
     browser.webNavigation.onErrorOccurred.addListener(handleNavigationError)
     browser.webNavigation.onHistoryStateUpdated.addListener(handleHistoryStateUpdate)
+
+    // Initialize storage listener for sync
+    initializeStorageListener()
 
     console.log('[Background] Brain Defender initialized successfully')
 

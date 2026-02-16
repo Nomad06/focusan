@@ -24,6 +24,7 @@ export const SiteObjectSchema = z.object({
   category: z.string().nullable(),
   schedule: ScheduleSchema.nullable().optional(),
   conditionalRules: z.array(ConditionalRuleSchema).optional(),
+  patternType: z.enum(['domain', 'regex']).optional().default('domain'),
 })
 
 export type SiteObject = z.infer<typeof SiteObjectSchema>
@@ -59,6 +60,8 @@ export const ExtensionStorageSchema = z.object({
   siteCategories: z.array(z.string()).optional(),
   strictMode: z.boolean().optional(),
   strictModeStart: z.number().optional(),
+  challengeMode: z.boolean().optional(),
+
 
   // Local storage
   blockStats: StatsSchema.optional(),
@@ -85,6 +88,7 @@ export function normalizeSite(site: SiteObject): SiteObject {
     category: site.category || null,
     schedule: site.schedule || null,
     conditionalRules: site.conditionalRules || [],
+    patternType: site.patternType || 'domain',
   }
 }
 

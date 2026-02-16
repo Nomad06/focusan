@@ -22,6 +22,10 @@ import {
   exportAllData,
   importAllData,
   setOnboardingSeen,
+  getStrictMode,
+  getChallengeMode,
+  setChallengeMode,
+  setStrictMode,
 } from '../shared/storage/storage'
 import { rebuildRules } from './dnr-manager'
 import { recordVisitAttempt, recordBlock, getStats, clearStats } from '../shared/domain/stats'
@@ -60,7 +64,8 @@ export async function handleMessage(message: Message): Promise<unknown> {
           message.host,
           message.category,
           message.schedule,
-          message.conditionalRules
+          message.conditionalRules,
+          message.patternType
         )
 
       case MessageType.REMOVE_SITE:
@@ -76,7 +81,7 @@ export async function handleMessage(message: Message): Promise<unknown> {
       // Focus Sessions
       // ========================================
       case MessageType.START_FOCUS_SESSION:
-        return await handleStartFocusSession(message.duration, message.sites)
+        return await handleStartFocusSession(message.duration, message.sites, message.mode)
 
       case MessageType.STOP_FOCUS_SESSION:
         return await handleStopFocusSession()
@@ -147,6 +152,20 @@ export async function handleMessage(message: Message): Promise<unknown> {
       case MessageType.SET_ONBOARDING_SEEN:
         return await handleSetOnboardingSeen(message.seen)
 
+      case MessageType.GET_STRICT_MODE:
+        return await handleGetStrictMode()
+
+      case MessageType.SET_STRICT_MODE:
+        return await handleSetStrictMode(message.enabled)
+
+      case MessageType.GET_CHALLENGE_MODE:
+        return await handleGetChallengeMode()
+
+      case MessageType.SET_CHALLENGE_MODE:
+        return await handleSetChallengeMode(message.enabled)
+
+
+
       default:
         console.error('[Handlers] Unknown message type:', message)
         return createErrorResponse('Unknown message type', 'UNKNOWN_MESSAGE_TYPE')
@@ -174,12 +193,14 @@ async function handleAddSite(
   host: string,
   category?: string | null,
   schedule?: unknown,
-  conditionalRules?: unknown[]
+  conditionalRules?: unknown[],
+  patternType?: 'domain' | 'regex'
 ): Promise<MessageResponse<MessageType.ADD_SITE>> {
   await storageAddSite(host, {
     category: category || null,
     schedule: schedule || null,
     conditionalRules: conditionalRules || [],
+    patternType: patternType,
   })
 
   // Rebuild DNR rules to apply new site
@@ -216,9 +237,10 @@ async function handleGetSites(): Promise<MessageResponse<MessageType.GET_SITES>>
 
 async function handleStartFocusSession(
   duration?: number,
-  sites?: string[]
+  sites?: string[],
+  mode?: 'blocklist' | 'whitelist'
 ): Promise<MessageResponse<MessageType.START_FOCUS_SESSION>> {
-  await startFocusSession(duration, sites)
+  await startFocusSession(duration, sites, mode)
 
   // Rebuild DNR rules to apply focus session
   await rebuildRules()
@@ -379,6 +401,28 @@ async function handleSetOnboardingSeen(seen: boolean): Promise<MessageResponse<M
   await setOnboardingSeen(seen)
   return createSuccessResponse()
 }
+
+async function handleGetStrictMode(): Promise<MessageResponse<MessageType.GET_STRICT_MODE>> {
+  const { enabled, startTime } = await getStrictMode()
+  return { enabled, startTime }
+}
+
+async function handleSetStrictMode(enabled: boolean): Promise<MessageResponse<MessageType.SET_STRICT_MODE>> {
+  await setStrictMode(enabled)
+  return createSuccessResponse()
+}
+
+async function handleGetChallengeMode(): Promise<MessageResponse<MessageType.GET_CHALLENGE_MODE>> {
+  const enabled = await getChallengeMode()
+  return { enabled }
+}
+
+async function handleSetChallengeMode(enabled: boolean): Promise<MessageResponse<MessageType.SET_CHALLENGE_MODE>> {
+  await setChallengeMode(enabled)
+  return createSuccessResponse()
+}
+
+
 
 /**
  * Initialize message listener

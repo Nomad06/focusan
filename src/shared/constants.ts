@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   ACHIEVEMENTS: 'achievements',
   CATEGORIES: 'siteCategories',
   STRICT_MODE: 'strictMode',
+  CHALLENGE_MODE: 'challengeMode',
 } as const
 
 // Migration version - increment when data format changes

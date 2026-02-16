@@ -17,6 +17,11 @@ import {
     ArrowRight,
     Check,
     ChevronDown,
+    Lock,
+    Unlock,
+    Key,
+    Mail,
+    AlertTriangle,
     type LucideProps
 } from 'lucide-react'
 
@@ -38,6 +43,12 @@ export const TrashIcon = Trash2
 export const ChevronDownIcon = ChevronDown
 export const ArrowRightIcon = ArrowRight
 export const CheckIcon = Check
+export const LockIcon = Lock
+export const UnlockIcon = Unlock
+export const KeyIcon = Key
+export const MailIcon = Mail
+export const AlertTriangleIcon = AlertTriangle
+
 
 // Standardized Custom Icons that match Lucide style
 // Default stroke width: 1.5px (Lucide default is 2px, but we can override or match)

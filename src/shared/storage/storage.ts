@@ -78,10 +78,17 @@ export async function addSite(
     category?: string | null
     schedule?: unknown
     conditionalRules?: unknown[]
+    patternType?: 'domain' | 'regex'
   }
 ): Promise<boolean> {
   try {
-    const host = normalizeHost(hostOrUrl)
+    let host: string | null = hostOrUrl
+
+    // Only normalize if NOT a regex
+    if (options?.patternType !== 'regex') {
+      host = normalizeHost(hostOrUrl)
+    }
+
     if (!host) {
       console.error('[Storage] Invalid host:', hostOrUrl)
       return false
@@ -102,6 +109,7 @@ export async function addSite(
       category: options?.category || null,
       schedule: (options?.schedule as any) || null,
       conditionalRules: (options?.conditionalRules as any) || [],
+      patternType: options?.patternType || 'domain',
     })
 
     return await setSites(sites)
@@ -352,8 +360,25 @@ export async function isTempWhitelisted(host: string): Promise<boolean> {
  */
 export async function getLanguage(): Promise<string | null> {
   try {
-    const data = await browser.storage.local.get(STORAGE_KEYS.I18N_LANGUAGE)
-    return (data[STORAGE_KEYS.I18N_LANGUAGE] as string) || null
+    // Try sync first
+    const syncData = await browser.storage.sync.get(STORAGE_KEYS.I18N_LANGUAGE)
+    if (syncData[STORAGE_KEYS.I18N_LANGUAGE]) {
+      return syncData[STORAGE_KEYS.I18N_LANGUAGE] as string
+    }
+
+    // Fallback to local (and migrate if found)
+    const localData = await browser.storage.local.get(STORAGE_KEYS.I18N_LANGUAGE)
+    const localLang = localData[STORAGE_KEYS.I18N_LANGUAGE] as string
+
+    if (localLang) {
+      console.log('[Storage] Migrating language preference to sync')
+      await browser.storage.sync.set({
+        [STORAGE_KEYS.I18N_LANGUAGE]: localLang,
+      })
+      return localLang
+    }
+
+    return null
   } catch (err) {
     console.error('[Storage] Error getting language:', err)
     return null
@@ -368,7 +393,7 @@ export async function getLanguage(): Promise<string | null> {
  */
 export async function setLanguage(language: string): Promise<boolean> {
   try {
-    await browser.storage.local.set({
+    await browser.storage.sync.set({
       [STORAGE_KEYS.I18N_LANGUAGE]: language,
     })
     return true
@@ -472,6 +497,43 @@ export async function setStrictMode(enabled: boolean): Promise<boolean> {
     return false
   }
 }
+
+/**
+ * Get challenge mode status
+ *
+ * @returns boolean
+ */
+export async function getChallengeMode(): Promise<boolean> {
+  try {
+    const data = await browser.storage.sync.get(STORAGE_KEYS.CHALLENGE_MODE)
+    return !!data[STORAGE_KEYS.CHALLENGE_MODE]
+  } catch (err) {
+    console.error('[Storage] Error getting challenge mode:', err)
+    return false
+  }
+}
+
+/**
+ * Set challenge mode
+ *
+ * @param enabled - Whether challenge mode is enabled
+ * @returns true if successful
+ */
+export async function setChallengeMode(enabled: boolean): Promise<boolean> {
+  try {
+    await browser.storage.sync.set({
+      [STORAGE_KEYS.CHALLENGE_MODE]: enabled,
+    })
+    return true
+  } catch (err) {
+    console.error('[Storage] Error setting challenge mode:', err)
+    return false
+  }
+}
+
+
+
+
 /**
  * Set onboarding seen status
  *

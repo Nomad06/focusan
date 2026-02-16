@@ -50,6 +50,10 @@ export enum MessageType {
   GET_MIGRATION_STATUS = 'GET_MIGRATION_STATUS',
   RUN_MIGRATIONS = 'RUN_MIGRATIONS',
   SET_ONBOARDING_SEEN = 'SET_ONBOARDING_SEEN',
+  GET_STRICT_MODE = 'GET_STRICT_MODE',
+  GET_CHALLENGE_MODE = 'GET_CHALLENGE_MODE',
+  SET_CHALLENGE_MODE = 'SET_CHALLENGE_MODE',
+  SET_STRICT_MODE = 'SET_STRICT_MODE',
 }
 
 /**
@@ -77,7 +81,11 @@ export interface SimpleMessage extends BaseMessage {
   | MessageType.GET_ACHIEVEMENTS
   | MessageType.EXPORT_DATA
   | MessageType.GET_MIGRATION_STATUS
+  | MessageType.GET_MIGRATION_STATUS
   | MessageType.RUN_MIGRATIONS
+  | MessageType.RUN_MIGRATIONS
+  | MessageType.GET_STRICT_MODE
+  | MessageType.GET_CHALLENGE_MODE
 }
 
 /**
@@ -89,6 +97,7 @@ export interface AddSiteMessage extends BaseMessage {
   category?: string | null
   schedule?: unknown
   conditionalRules?: unknown[]
+  patternType?: 'domain' | 'regex'
 }
 
 /**
@@ -114,7 +123,8 @@ export interface UpdateSiteMessage extends BaseMessage {
 export interface StartFocusSessionMessage extends BaseMessage {
   type: MessageType.START_FOCUS_SESSION
   duration?: number // minutes
-  sites?: string[] // additional sites to block
+  sites?: string[] // additional sites to block (or allow in whitelist mode)
+  mode?: 'blocklist' | 'whitelist'
 }
 
 /**
@@ -176,6 +186,14 @@ export interface SetOnboardingSeenMessage extends BaseMessage {
 }
 
 /**
+ * Set challenge mode message
+ */
+export interface SetChallengeModeMessage extends BaseMessage {
+  type: MessageType.SET_CHALLENGE_MODE
+  enabled: boolean
+}
+
+/**
  * Union of all possible messages
  */
 export type Message =
@@ -190,7 +208,10 @@ export type Message =
   | RecordBlockMessage
   | CheckAchievementsMessage
   | ImportDataMessage
+  | ImportDataMessage
   | SetOnboardingSeenMessage
+  | SetChallengeModeMessage
+  | { type: MessageType.SET_STRICT_MODE; enabled: boolean }
 
 /**
  * Response types for each message
@@ -221,6 +242,10 @@ export interface MessageResponses {
   [MessageType.GET_MIGRATION_STATUS]: { version: number; needsMigration: boolean }
   [MessageType.RUN_MIGRATIONS]: { result: unknown }
   [MessageType.SET_ONBOARDING_SEEN]: { success: boolean }
+  [MessageType.GET_STRICT_MODE]: { enabled: boolean; startTime?: number }
+  [MessageType.GET_CHALLENGE_MODE]: { enabled: boolean }
+  [MessageType.SET_CHALLENGE_MODE]: { success: boolean }
+  [MessageType.SET_STRICT_MODE]: { success: boolean }
 }
 
 /**

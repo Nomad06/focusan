@@ -30,6 +30,7 @@ export const FocusSessionSchema = z.object({
   endTime: z.number(),
   duration: z.number().min(1),
   sitesToBlock: z.array(z.string()),
+  mode: z.enum(['blocklist', 'whitelist']).default('blocklist'),
   pausedTime: z.number().default(0),
   pausedAt: z.number().nullable(),
 })
@@ -120,17 +121,10 @@ export async function saveFocusSessionsData(data: FocusSessionData): Promise<voi
     console.error('[FocusSessions] Error saving data:', err)
   }
 }
-
-/**
- * Start a new focus session
- *
- * @param durationMinutes - Session duration in minutes (null = use default from settings)
- * @param sitesToBlock - Additional sites to block during session
- * @returns true if session started successfully
- */
 export async function startFocusSession(
   durationMinutes: number | null = null,
-  sitesToBlock: string[] | null = null
+  sitesToBlock: string[] | null = null,
+  mode: 'blocklist' | 'whitelist' = 'blocklist'
 ): Promise<boolean> {
   try {
     const data = await getFocusSessionsData()
@@ -149,6 +143,7 @@ export async function startFocusSession(
       endTime: endTime,
       duration: duration,
       sitesToBlock: sitesToBlock || [],
+      mode: mode,
       pausedTime: 0,
       pausedAt: null,
     }

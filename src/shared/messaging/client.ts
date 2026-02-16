@@ -60,6 +60,7 @@ export const messagingClient = {
       category?: string | null
       schedule?: unknown
       conditionalRules?: unknown[]
+      patternType?: 'domain' | 'regex'
     }
   ): Promise<boolean> {
     const response = await sendMessage({
@@ -68,6 +69,7 @@ export const messagingClient = {
       category: options?.category,
       schedule: options?.schedule,
       conditionalRules: options?.conditionalRules,
+      patternType: options?.patternType,
     })
     return response.success
   },
@@ -111,11 +113,12 @@ export const messagingClient = {
   /**
    * Start a focus session
    */
-  async startFocusSession(duration?: number, sites?: string[]): Promise<boolean> {
-    const response = await sendMessage({
+  async startFocusSession(duration?: number, sites?: string[], mode: 'blocklist' | 'whitelist' = 'blocklist'): Promise<boolean> {
+    const response = await sendMessage<MessageType.START_FOCUS_SESSION>({
       type: MessageType.START_FOCUS_SESSION,
       duration,
       sites,
+      mode,
     })
     return response.success
   },
@@ -297,6 +300,49 @@ export const messagingClient = {
     })
     return response.success
   },
+
+  /**
+   * Get strict mode status
+   */
+  async getStrictMode(): Promise<{ enabled: boolean; startTime?: number }> {
+    const response = await sendMessage({
+      type: MessageType.GET_STRICT_MODE,
+    })
+    return response
+  },
+
+  /**
+   * Set strict mode
+   */
+  async setStrictMode(enabled: boolean): Promise<boolean> {
+    const response = await sendMessage({
+      type: MessageType.SET_STRICT_MODE,
+      enabled,
+    })
+    return response.success
+  },
+
+  /**
+   * Get challenge mode status
+   */
+  async getChallengeMode(): Promise<{ enabled: boolean }> {
+    const response = await sendMessage({
+      type: MessageType.GET_CHALLENGE_MODE,
+    })
+    return response
+  },
+
+  /**
+   * Set challenge mode
+   */
+  async setChallengeMode(enabled: boolean): Promise<boolean> {
+    const response = await sendMessage({
+      type: MessageType.SET_CHALLENGE_MODE,
+      enabled,
+    })
+    return response.success
+  },
+
 }
 
 /**

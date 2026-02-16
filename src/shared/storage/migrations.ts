@@ -201,8 +201,8 @@ async function migrateV2toV3(): Promise<void> {
   // Convert any legacy strings to objects first
   const sitesAsObjects: SiteObject[] = sites.map(site =>
     typeof site === 'string'
-      ? { host: site, addedAt: Date.now(), category: null, schedule: null, conditionalRules: [] }
-      : site
+      ? { host: site, addedAt: Date.now(), category: null, schedule: null, conditionalRules: [], patternType: 'domain' }
+      : { ...site, patternType: (site as any).patternType || 'domain' }
   )
 
   // Normalize with Zod schemas

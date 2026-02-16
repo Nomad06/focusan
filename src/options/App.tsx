@@ -27,16 +27,18 @@ import type { AchievementsData } from '../shared/domain/achievements'
 import { ACHIEVEMENT_DEFINITIONS, getAchievementProgress, type AchievementProgress, type AchievementType } from '../shared/domain/achievements'
 import { type Schedule } from '../shared/domain/schedule'
 import { shouldShowChallengeForSchedule, shouldShowChallengeForRules } from '../shared/domain/strictness'
-import ChallengeModal from './ChallengeModal'
+import { ChallengeModal } from '../shared/components/ChallengeModal'
 import ScheduleModal from './ScheduleModal'
 import ConditionalRulesModal from './ConditionalRulesModal'
 import StrictLockModal from './StrictLockModal'
-import { getStrictMode, setStrictMode } from '../shared/storage/storage'
+import { getStrictMode } from '../shared/storage/storage'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
 import type { ConditionalRule } from '../shared/domain/conditional-rules'
 import Heatmap from '../shared/components/Heatmap'
+import { SettingsTab } from './SettingsTab'
+import { BLOCKING_PRESETS, type Preset } from '../shared/utils/presets'
 
-type Tab = 'sites' | 'stats' | 'achievements'
+type Tab = 'sites' | 'stats' | 'achievements' | 'settings'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -61,9 +63,17 @@ const App: React.FC = () => {
   const [newSiteRules, setNewSiteRules] = useState<ConditionalRule[]>([])
   const [showNewScheduleModal, setShowNewScheduleModal] = useState<boolean>(false)
   const [showNewRulesModal, setShowNewRulesModal] = useState<boolean>(false)
-  const [strictModeEnabled, setStrictModeEnabled] = useState<boolean>(false)
-  const [showStrictLockModal, setShowStrictLockModal] = useState<boolean>(false)
+  // Security State
+  const [strictModeEnabled, setStrictModeEnabled] = useState(false)
+  const [strictModeStart, setStrictModeStart] = useState<number | undefined>(undefined)
+  const [challengeModeEnabled, setChallengeModeEnabled] = useState(false)
+
+  // Modals
+  const [showStrictLockModal, setShowStrictLockModal] = useState(false)
   const [pendingStrictAction, setPendingStrictAction] = useState<(() => Promise<void>) | null>(null)
+
+  // Generic pending action for friction/Pin
+
 
   const [sites, setSites] = useState<SiteObject[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
@@ -71,7 +81,7 @@ const App: React.FC = () => {
   const [achievementProgress, setAchievementProgress] = useState<Record<AchievementType, AchievementProgress> | null>(null)
   const getTabFromHash = (): Tab => {
     const hash = window.location.hash.slice(1)
-    if (['sites', 'stats', 'achievements'].includes(hash)) {
+    if (['sites', 'stats', 'achievements', 'settings'].includes(hash)) {
       return hash as Tab
     }
     return 'sites'
@@ -104,6 +114,8 @@ const App: React.FC = () => {
   } | null>(null)
 
 
+
+
   // Reactive language hook
   const language = useLanguage()
 
@@ -112,6 +124,9 @@ const App: React.FC = () => {
     const init = async () => {
       await initI18n()
       loadAllData()
+
+      const { enabled } = await messagingClient.getChallengeMode()
+      setChallengeModeEnabled(enabled)
     }
     init()
   }, [])
@@ -140,13 +155,28 @@ const App: React.FC = () => {
   }
 
   const loadStrictMode = async () => {
-    const { enabled } = await getStrictMode()
+    const { enabled, startTime } = await getStrictMode()
     setStrictModeEnabled(enabled)
+    setStrictModeStart(startTime)
+  }
+
+  const loadChallengeMode = async () => {
+    const { enabled } = await messagingClient.getChallengeMode()
+    setChallengeModeEnabled(enabled)
+  }
+
+  const loadSettings = async () => {
+    // Placeholder for any other settings to load
   }
 
   useEffect(() => {
+    loadSettings()
     loadStrictMode()
+    loadChallengeMode()
   }, [])
+
+  // Call separate effect or integrate, but ensure safe state update
+
 
   const loadSites = async () => {
     try {
@@ -219,6 +249,29 @@ const App: React.FC = () => {
     }
   }
 
+  const handleAddPreset = async (preset: Preset) => {
+    // Check if duplicate based on ID or Pattern
+    const existing = sites.find(s => s.host === preset.pattern)
+    if (existing) {
+      alert(t('errors.siteAlreadyAdded'))
+      return
+    }
+
+    try {
+      await messagingClient.addSite(preset.pattern, {
+        category: 'Smart Filter',
+        patternType: 'regex'
+      })
+      await loadSites()
+      setShowPresetsModal(false)
+    } catch (err) {
+      console.error('[Options] Error adding preset:', err)
+      alert(t('errors.failedToAdd'))
+    }
+  }
+
+  const [showPresetsModal, setShowPresetsModal] = useState<boolean>(false)
+
   const handleRemoveSite = (host: string) => {
     setPendingAction({
       type: 'delete',
@@ -233,6 +286,17 @@ const App: React.FC = () => {
     if (strictModeEnabled) {
       setPendingStrictAction(() => action)
       setShowStrictLockModal(true)
+    } else if (challengeModeEnabled) {
+      // Use ChallengeModal for friction
+      setPendingAction({
+        type: 'delete',
+        title: 'Challenge Mode',
+        description: 'Complete this challenge to proceed.',
+        onConfirm: async () => {
+          await action()
+          setPendingAction(null)
+        }
+      })
     } else {
       await action()
     }
@@ -482,16 +546,18 @@ const App: React.FC = () => {
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-          {['sites', 'stats', 'achievements'].map((tab) => {
+          {['sites', 'stats', 'achievements', 'settings'].map((tab) => {
             const icons = {
               sites: <SamuraiShieldIcon size={24} />,
               stats: <ScrollIcon size={24} />,
               achievements: <KatanakakeIcon size={24} />,
+              settings: <ShieldIcon size={24} />,
             }
             const labels = {
               sites: t('options.blocklist'),
               stats: t('options.dashboard'),
               achievements: t('options.achievements'),
+              settings: t('settings.tabTitle') || 'Settings',
             }
             const isActive = activeTab === tab
 
@@ -537,7 +603,7 @@ const App: React.FC = () => {
         {/* Top Bar */}
         <div className="flex justify-between items-end mb-10 pb-4 border-b border-border/30">
           <div>
-            <h2 className="text-3xl font-serif text-sumi-black mb-2 tracking-tight">
+            <h2 className="text-3xl font-bold text-sumi-black mb-2 tracking-tight">
               {activeTab === 'sites' && t('options.blocklist')}
               {activeTab === 'stats' && t('options.dashboard')}
               {activeTab === 'achievements' && t('options.achievements')}
@@ -550,34 +616,6 @@ const App: React.FC = () => {
           </div>
           <div className="flex items-center gap-4">
             <LanguageSwitcher currentLang={language} onLanguageChange={handleLanguageChange} />
-            {/* Strict Mode Toggle */}
-            <div className="flex items-center gap-2 pl-4 border-l border-border/30">
-              <span className={`text-xs font-bold uppercase tracking-wider ${strictModeEnabled ? 'text-red-500' : 'text-gray-400'}`}>
-                {strictModeEnabled ? 'Strict Mode ON' : 'Strict Mode OFF'}
-              </span>
-              <button
-                onClick={() => {
-                  if (strictModeEnabled) {
-                    // Trying to disable strict mode -> Trigger Check!
-                    checkStrictMode(async () => {
-                      await setStrictMode(false)
-                      setStrictModeEnabled(false)
-                    })
-                  } else {
-                    if (confirm('Enable Strict Mode? verification via crypto payment will be required to delete sites or disable this mode.')) {
-                      setStrictMode(true).then(() => setStrictModeEnabled(true))
-                    }
-                  }
-                }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 ${strictModeEnabled ? 'bg-red-500' : 'bg-gray-200'
-                  }`}
-              >
-                <span
-                  className={`${strictModeEnabled ? 'translate-x-6' : 'translate-x-1'
-                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </button>
-            </div>
           </div>
         </div>
 
@@ -593,9 +631,77 @@ const App: React.FC = () => {
             }
             setPendingStrictAction(null)
           }}
+          startTime={strictModeStart}
         />
 
+
+
+        <AnimatePresence>
+          {pendingAction && (
+            <div className="fixed inset-0 z-50">
+              <ChallengeModal
+                isOpen={true}
+                onClose={() => setPendingAction(null)}
+                onSuccess={pendingAction.onConfirm}
+                action={pendingAction.type === 'delete' ? 'remove-site' : 'disable-extension'}
+                title={pendingAction.title}
+              />
+            </div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showPresetsModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                onClick={() => setShowPresetsModal(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden relative z-10"
+              >
+                <div className="p-6 border-b border-border/10 bg-gray-50/50 flex justify-between items-center">
+                  <h3 className="text-xl font-serif text-sumi-black">Smart Filters</h3>
+                  <button onClick={() => setShowPresetsModal(false)} className="text-sumi-gray hover:text-sumi-black"><XIcon size={20} /></button>
+                </div>
+                <div className="p-2 max-h-[60vh] overflow-y-auto">
+                  {BLOCKING_PRESETS.map(preset => (
+                    <button
+                      key={preset.id}
+                      onClick={() => handleAddPreset(preset)}
+                      className="w-full text-left p-4 hover:bg-gray-50 rounded-xl transition-colors group border-b border-border/10 last:border-0"
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-sumi-black group-hover:text-accent transition-colors">{preset.name}</span>
+                        <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{preset.host}</span>
+                      </div>
+                      <p className="text-sm text-sumi-gray/80">{preset.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
         <AnimatePresence mode="wait">
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
+            <motion.div
+              key="settings"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+            >
+              <SettingsTab />
+            </motion.div>
+          )}
           {/* Sites Tab */}
           {activeTab === 'sites' && (
             <motion.div
@@ -645,6 +751,13 @@ const App: React.FC = () => {
                     <ShuffleIcon className="w-4 h-4 opacity-70" />
                     {t('options.conditionsButtonTitle') || t('options.setConditions')}
                     {newSiteRules.length > 0 && <span className="ml-1 text-xs bg-accent text-white px-1.5 rounded-full">{newSiteRules.length}</span>}
+                  </button>
+                  <button
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-border text-sumi-gray hover:border-accent hover:text-accent hover:bg-accent/5 transition-all text-sm font-medium"
+                    onClick={() => setShowPresetsModal(true)}
+                  >
+                    <LayoutIcon className="w-4 h-4 opacity-70" />
+                    {t('options.smartFilters') || 'Smart Filters'}
                   </button>
                 </div>
               </div>
@@ -879,6 +992,9 @@ const App: React.FC = () => {
             </motion.div>
           )}
 
+          {/* Settings Tab */}
+
+
           {/* Achievements Tab */}
           {activeTab === 'achievements' && achievements && achievementProgress && (
             <div
@@ -929,9 +1045,9 @@ const App: React.FC = () => {
                             <span>{t('options.progress')}</span>
                             <span className="font-mono">{Math.round(progress?.progress || 0)}%</span>
                           </div>
-                          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-accent transition-all duration-500 delay-200"
+                              className="h-full bg-accent"
                               style={{ width: `${progress?.progress || 0}%` }}
                             />
                           </div>
@@ -943,17 +1059,13 @@ const App: React.FC = () => {
               </div>
             </div>
           )}
-
-
         </AnimatePresence>
       </main>
 
-      {/* Modals */}
       <AnimatePresence>
         {showNewScheduleModal && (
           <ScheduleModal
-            key="schedule-modal"
-            host={newSiteInput || 'New Site'}
+            host={newSiteInput || t('common.newSite') || 'New Site'}
             initialSchedule={newSiteSchedule}
             onSave={(schedule) => {
               setNewSiteSchedule(schedule)
@@ -965,8 +1077,7 @@ const App: React.FC = () => {
 
         {showNewRulesModal && (
           <ConditionalRulesModal
-            key="rules-modal"
-            host={newSiteInput || 'New Site'}
+            host={newSiteInput || t('common.newSite') || 'New Site'}
             initialRules={newSiteRules}
             onSave={(rules) => {
               setNewSiteRules(rules)
@@ -975,8 +1086,6 @@ const App: React.FC = () => {
             onClose={() => setShowNewRulesModal(false)}
           />
         )}
-
-
 
         {schedulingHost && (
           <ScheduleModal
@@ -998,18 +1107,9 @@ const App: React.FC = () => {
           />
         )}
 
-        {pendingAction && (
-          <ChallengeModal
-            key="challenge-modal"
-            actionType={pendingAction.type}
-            title={pendingAction.title}
-            description={pendingAction.description}
-            onConfirm={pendingAction.onConfirm}
-            onCancel={() => setPendingAction(null)}
-          />
-        )}
+
       </AnimatePresence>
-    </div>
+    </div >
   )
 }
 

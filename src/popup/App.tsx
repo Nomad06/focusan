@@ -11,6 +11,8 @@ import { t, initI18n } from '../shared/i18n'
 import { SessionState, type FocusSession } from '../shared/domain/focus-sessions'
 import { SettingsIcon, SamuraiShieldIcon, XIcon } from '../shared/components/Icons'
 import { playSound, SoundType } from '../shared/sound'
+import { ChallengeModal } from '../shared/components/ChallengeModal'
+import { StrictLockModal } from '../shared/components/StrictLockModal'
 
 // Animation variants
 const containerVariants = {
@@ -48,6 +50,14 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true)
   const [currentHost, setCurrentHost] = useState<string>('')
   const [breathState, setBreathState] = useState<'inhale' | 'exhale'>('inhale')
+  const [showChallengeModal, setShowChallengeModal] = useState<boolean>(false)
+  const [strictMode, setStrictMode] = useState<boolean>(false)
+  const [challengeMode, setChallengeMode] = useState<boolean>(false)
+
+  // Security State
+  // Security State
+  const [showStrictLockModal, setShowStrictLockModal] = useState(false)
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
   // Detect current host
   useEffect(() => {
@@ -109,6 +119,20 @@ const App: React.FC = () => {
       await initI18n()
       await loadSitesCount()
       await loadFocusSession()
+
+      try {
+        const { enabled } = await messagingClient.getStrictMode()
+        setStrictMode(enabled)
+        // setStrictModeStart(startTime) // Not available in contract yet
+
+
+
+        const challenge = await messagingClient.getChallengeMode()
+        setChallengeMode(challenge.enabled)
+      } catch (err) {
+        console.error('[Popup] Error loading status:', err)
+      }
+
       setLoading(false)
     }
     init()
@@ -174,9 +198,25 @@ const App: React.FC = () => {
     }
   }
 
+  const checkStrictMode = (action: () => void) => {
+    if (strictMode) {
+      setPendingAction(() => action)
+      setShowStrictLockModal(true)
+    } else if (challengeMode) {
+      setPendingAction(() => action)
+      setShowChallengeModal(true)
+    } else {
+      action()
+    }
+  }
+
   // Stop focus session
   const handleStopFocusSession = async () => {
     playSound(SoundType.SOFT_GONG)
+    checkStrictMode(performStopSession)
+  }
+
+  const performStopSession = async () => {
     try {
       await messagingClient.stopFocusSession()
       await loadFocusSession()
@@ -220,6 +260,33 @@ const App: React.FC = () => {
               setShowPomodoroModal(false)
             }}
           />
+        ) : showStrictLockModal ? ( // Added StrictLockModal
+          <StrictLockModal
+            key="strictLockModal"
+            isOpen={showStrictLockModal}
+            onClose={() => {
+              setShowStrictLockModal(false)
+              setPendingAction(null)
+            }}
+            onSuccess={() => {
+              if (pendingAction) pendingAction()
+              setPendingAction(null)
+              setShowStrictLockModal(false)
+            }}
+          />
+
+        ) : showChallengeModal ? (
+          <div className="absolute inset-0 z-50">
+            <ChallengeModal
+              isOpen={true}
+              onClose={() => setShowChallengeModal(false)}
+              onSuccess={() => {
+                setShowChallengeModal(false)
+                performStopSession()
+              }}
+              action="stop-session"
+            />
+          </div>
         ) : (
           <motion.div
             key="main"
@@ -406,6 +473,8 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
   const [newSiteInput, setNewSiteInput] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
   const [duration, setDuration] = useState<number>(25)
+  const [mode, setMode] = useState<'blocklist' | 'whitelist'>('blocklist')
+
 
   // Load sites
   useEffect(() => {
@@ -463,7 +532,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
     try {
       playSound(SoundType.TEMPLE_BELL)
       const sitesToBlock = [...Array.from(selectedMainSites), ...additionalSites]
-      await messagingClient.startFocusSession(duration, sitesToBlock)
+      await messagingClient.startFocusSession(duration, sitesToBlock, mode)
       onStart()
     } catch (err) {
       console.error('[PomodoroModal] Error starting session:', err)
@@ -498,6 +567,31 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
         </div>
       ) : (
         <div className="flex flex-col gap-5 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+          {/* Mode Toggle */}
+          <div className="washi-card p-3 border border-border flex items-center justify-between shadow-sm">
+            <span className="font-serif text-sm font-medium text-sumi-black">Mode</span>
+            <div className="flex bg-black/5 p-1 rounded-lg">
+              <button
+                onClick={() => setMode('blocklist')}
+                className={`px-3 py-1 text-xs rounded-md transition-all font-serif ${mode === 'blocklist'
+                  ? 'bg-white text-accent shadow-sm font-bold'
+                  : 'text-sumi-gray hover:text-sumi-black'
+                  }`}
+              >
+                Block
+              </button>
+              <button
+                onClick={() => setMode('whitelist')}
+                className={`px-3 py-1 text-xs rounded-md transition-all font-serif ${mode === 'whitelist'
+                  ? 'bg-white text-accent shadow-sm font-bold'
+                  : 'text-sumi-gray hover:text-sumi-black'
+                  }`}
+              >
+                Allow
+              </button>
+            </div>
+          </div>
+
           {/* Duration Input */}
           <div className="washi-card p-4 border border-border flex items-center gap-4 shadow-sm">
             <label className="font-medium text-sm flex-1 text-sumi-black font-serif">
@@ -516,12 +610,12 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
           {/* Main sites list */}
           <div className="flex flex-col gap-2">
             <label className="font-semibold text-[10px] text-sumi-gray uppercase tracking-widest pl-1">
-              {t('focusSession.mainSites')}
+              {mode === 'whitelist' ? 'Allowed Sites' : t('focusSession.mainSites')}
             </label>
             <div className="washi-card border border-border p-2 max-h-48 overflow-y-auto">
               {sites.length === 0 ? (
                 <div className="text-sumi-gray text-center p-4 text-xs italic">
-                  {t('focusSession.noSites')}
+                  {mode === 'whitelist' ? 'Add sites you want to ALLOW access to.' : t('focusSession.noSites')}
                 </div>
               ) : (
                 <div className="flex flex-col gap-1">
@@ -547,7 +641,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
           {/* Additional sites */}
           <div className="flex flex-col gap-2">
             <label className="font-semibold text-[10px] text-sumi-gray uppercase tracking-widest pl-1">
-              {t('focusSession.additionalSites')}
+              {mode === 'whitelist' ? 'More Allowed Sites' : t('focusSession.additionalSites')}
             </label>
             <div className="flex gap-2">
               <input

@@ -27,13 +27,57 @@ async function buildRules() {
 
     // Get focus session sites (if session is active)
     const focusSession = await getCurrentSession()
-    const focusSessionSites =
-      focusSession && focusSession.state === SessionState.WORKING
-        ? focusSession.sitesToBlock
-        : []
+    const isFocusWorking = focusSession && focusSession.state === SessionState.WORKING
+    const focusMode = isFocusWorking ? focusSession.mode || 'blocklist' : 'blocklist'
+    const focusSessionSites = isFocusWorking ? focusSession.sitesToBlock : []
 
-    console.log('[DNR] Focus session active:', !!focusSession, 'sites:', focusSessionSites.length)
+    console.log('[DNR] Focus session active:', !!focusSession, 'mode:', focusMode, 'sites:', focusSessionSites.length)
 
+    // Whitelist Mode Logic
+    if (focusMode === 'whitelist') {
+      const rules = []
+      let ruleIdCounter = DNR_RULE_IDS.MIN
+
+      // 1. Block EVERYTHING (Priority 1)
+      rules.push({
+        id: ruleIdCounter++,
+        priority: 1,
+        action: { type: 'block' as const },
+        condition: { urlFilter: '*', resourceTypes: ['main_frame' as const] }
+      })
+
+      // 2. Allow Focus Session Sites (Priority 2)
+      // In whitelist mode, sitesToBlock acts as the "Allowed" list
+      for (const host of focusSessionSites) {
+        rules.push({
+          id: ruleIdCounter++,
+          priority: 2,
+          action: { type: 'allow' as const },
+          condition: {
+            regexFilter: hostToRegex(host),
+            resourceTypes: ['main_frame' as const]
+          }
+        })
+      }
+
+      // 3. Allow Temporary Whitelist Sites (Priority 2)
+      // Users might have used "I need 5 mins" feature
+      for (const entry of tempWhitelist) {
+        rules.push({
+          id: ruleIdCounter++,
+          priority: 2,
+          action: { type: 'allow' as const },
+          condition: {
+            regexFilter: hostToRegex(entry.host),
+            resourceTypes: ['main_frame' as const]
+          }
+        })
+      }
+
+      return rules
+    }
+
+    // Standard Blocklist Mode Logic
     // Filter sites based on schedule and conditional rules
     const activeSites = []
 
@@ -72,6 +116,7 @@ async function buildRules() {
         category: null,
         schedule: null,
         conditionalRules: [],
+        patternType: 'domain',
       })
     }
 
@@ -85,16 +130,23 @@ async function buildRules() {
         return null
       }
 
+      const condition: any = {
+        resourceTypes: ['main_frame' as const],
+      }
+
+      if (site.patternType === 'regex') {
+        condition.regexFilter = site.host
+      } else {
+        condition.regexFilter = hostToRegex(site.host)
+      }
+
       return {
         id: ruleId,
         priority: 1,
         action: {
           type: 'block' as const, // Changed from redirect to block
         },
-        condition: {
-          regexFilter: hostToRegex(site.host),
-          resourceTypes: ['main_frame' as const],
-        },
+        condition,
       }
     })
 
