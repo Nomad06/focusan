@@ -44,7 +44,7 @@ export function useLanguage(): Language {
       changes: Record<string, browser.Storage.StorageChange>,
       areaName: string
     ) => {
-      if (areaName === 'local' && changes['i18n_language']) {
+      if ((areaName === 'sync' || areaName === 'local') && changes['i18n_language']) {
         const newLang = changes['i18n_language'].newValue
         if (newLang && (newLang === 'ru' || newLang === 'en')) {
           console.log('[useLanguage] Language changed to:', newLang)
