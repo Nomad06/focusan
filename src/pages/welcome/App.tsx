@@ -272,22 +272,31 @@ const App: React.FC = () => {
                 {t('bushido.welcome.setup')}
               </p>
 
-              <div className="w-full max-w-md mb-2 relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 font-serif text-sm" style={{ color: 'var(--akabeni)' }}>
-                  封
+              <div className="w-full max-w-md mb-2">
+                <div className="relative">
+                  <span
+                    className="absolute left-4 top-1/2 -translate-y-1/2 font-serif pointer-events-none select-none"
+                    style={{ fontSize: 18, color: 'var(--akabeni)', lineHeight: 1, zIndex: 1 }}
+                  >
+                    封
+                  </span>
+                  <input
+                    type="text"
+                    value={siteInput}
+                    onChange={e => { setSiteInput(e.target.value); if (siteError) setSiteError('') }}
+                    onKeyDown={e => e.key === 'Enter' && goToFinish()}
+                    placeholder="youtube.com"
+                    className="zen-input text-lg font-mono text-center"
+                    style={{
+                      paddingLeft: 44,
+                      paddingRight: 44,
+                      ...(siteError ? { borderColor: 'var(--hi-iro)' } : {}),
+                    }}
+                    aria-invalid={!!siteError}
+                    autoFocus
+                  />
                 </div>
-                <input
-                  type="text"
-                  value={siteInput}
-                  onChange={e => { setSiteInput(e.target.value); if (siteError) setSiteError('') }}
-                  onKeyDown={e => e.key === 'Enter' && goToFinish()}
-                  placeholder="youtube.com"
-                  className="zen-input text-lg font-mono text-center"
-                  style={{ paddingLeft: 36, ...(siteError ? { borderColor: 'var(--hi-iro)' } : {}) }}
-                  aria-invalid={!!siteError}
-                  autoFocus
-                />
-                <div className="h-5 mt-2 text-xs" style={{ color: 'var(--hi-iro)' }} role="alert">
+                <div className="h-5 mt-2 text-xs text-center" style={{ color: 'var(--hi-iro)' }} role="alert">
                   {siteError}
                 </div>
               </div>

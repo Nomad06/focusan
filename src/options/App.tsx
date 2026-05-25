@@ -887,7 +887,7 @@ const App: React.FC = () => {
 
               {/* Sites List Container */}
               <div className="washi-card rounded-xl border border-border/60 shadow-[var(--shadow-lg)] overflow-hidden">
-                <div className="flex justify-between items-center p-5 border-b border-border/50" style={{ background: 'rgba(34, 28, 24, 0.5)' }}>
+                <div className="flex justify-between items-center p-5 border-b border-border/50" style={{ background: 'var(--bg2)' }}>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setCategoryFilter('all')}
