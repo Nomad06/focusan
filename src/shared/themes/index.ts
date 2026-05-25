@@ -1,16 +1,45 @@
 /**
  * Theme Manager
- * Simplified for single Focusan theme
+ * Supports Focusan (dark lacquer) + Focusan-Shiro (washi paper) variants.
  */
 
+import browser from 'webextension-polyfill'
 import { focusanTheme } from './focusan'
+import { focusanShiroTheme } from './focusan-shiro'
 import type { Theme } from './types'
 
+const STORAGE_KEY = 'theme_preference'
+
+export const themeRegistry: Record<string, Theme> = {
+  'focusan':       focusanTheme,
+  'focusan-shiro': focusanShiroTheme,
+}
+
 /**
- * Get current theme (Always Focusan)
+ * Read theme id from storage, fall back to dark Focusan.
  */
 export async function getCurrentTheme(): Promise<Theme> {
+  try {
+    const stored = await browser.storage.sync.get(STORAGE_KEY)
+    const pref = stored[STORAGE_KEY] as { themeId?: string } | undefined
+    if (pref?.themeId && themeRegistry[pref.themeId]) {
+      return themeRegistry[pref.themeId]
+    }
+  } catch {
+    // ignore — fall back to default
+  }
   return focusanTheme
+}
+
+/**
+ * Persist + apply a theme by id.
+ */
+export async function setTheme(themeId: string): Promise<void> {
+  const theme = themeRegistry[themeId] || focusanTheme
+  await browser.storage.sync.set({
+    [STORAGE_KEY]: { themeId: theme.metadata.id, appliedAt: Date.now() },
+  })
+  applyTheme(theme)
 }
 
 /**
@@ -19,10 +48,8 @@ export async function getCurrentTheme(): Promise<Theme> {
 export function applyTheme(theme: Theme): void {
   const root = document.documentElement
 
-  // Apply color variables
   Object.entries(theme.colors).forEach(([key, value]) => {
     if (key === 'palette' && typeof value === 'object' && value !== null) {
-      // Apply palette colors with prefix
       Object.entries(value).forEach(([paletteKey, paletteValue]) => {
         if (typeof paletteValue === 'string') {
           root.style.setProperty(`--palette-${paletteKey}`, paletteValue)
@@ -33,20 +60,15 @@ export function applyTheme(theme: Theme): void {
     }
   })
 
-  // Apply typography
   root.style.setProperty('--font-sans', theme.typography.sans)
   root.style.setProperty('--font-mono', theme.typography.mono)
-
-  // Apply effects
   root.style.setProperty('--shadow', theme.effects.shadow)
   root.style.setProperty('--shadow-lg', theme.effects.shadowLg || theme.effects.shadow)
   root.style.setProperty('--radius', theme.effects.radius)
   root.style.setProperty('--radius-lg', theme.effects.radiusLg || theme.effects.radius)
 
-  // Set theme ID as data attribute for CSS targeting
   root.setAttribute('data-theme', theme.metadata.id)
 
-  // Inject custom CSS if not already injected
   const customStyleId = `theme-custom-${theme.metadata.id}`
   let customStyle = document.getElementById(customStyleId)
 
@@ -57,7 +79,6 @@ export function applyTheme(theme: Theme): void {
     document.head.appendChild(customStyle)
   }
 
-  // Remove old theme custom CSS
   document.querySelectorAll('style[id^="theme-custom-"]').forEach(style => {
     if (style.id !== customStyleId) {
       style.remove()
@@ -68,12 +89,12 @@ export function applyTheme(theme: Theme): void {
 }
 
 /**
- * Initialize theme on page load
+ * Initialize theme on page load — reads stored preference.
  */
 export async function initializeTheme(): Promise<void> {
-  applyTheme(focusanTheme)
+  const theme = await getCurrentTheme()
+  applyTheme(theme)
 }
 
-// Re-export types and themes for convenience
 export type { Theme } from './types'
-export { focusanTheme }
+export { focusanTheme, focusanShiroTheme }

@@ -339,7 +339,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="w-[340px] min-h-[520px] flex flex-col p-5 font-sans overflow-hidden relative" style={{ background: 'var(--sumi)' }}>
+    <div className="w-[340px] min-h-[520px] flex flex-col p-5 font-sans overflow-hidden relative" style={{ background: 'var(--bg1)' }}>
       {/* Asanoha pattern overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-40" style={{ backgroundImage: 'var(--asanoha)' }} />
       {/* Crimson radial glow */}
@@ -400,7 +400,7 @@ const App: React.FC = () => {
               <div className="flex items-center gap-3">
                 <div className="hanko tilt seal-press" style={{ fontSize: 14, padding: '4px 8px' }}>士</div>
                 <div className="flex flex-col">
-                  <span className="font-serif text-lg tracking-wide leading-none" style={{ color: 'var(--kinari)' }}>
+                  <span className="font-serif text-lg tracking-wide leading-none" style={{ color: 'var(--text)' }}>
                     Focusan
                   </span>
                   <span className="text-[10px] font-serif tracking-[0.45em] mt-1 uppercase" style={{ color: 'var(--kinpaku)' }}>
@@ -504,7 +504,7 @@ const App: React.FC = () => {
 
                   <motion.span
                     className="font-mono text-[2.75rem] font-light leading-none tracking-tight tabular-nums"
-                    style={{ color: 'var(--kinari)', textShadow: '0 0 20px rgba(212,175,55,0.2)' }}
+                    style={{ color: 'var(--text)', textShadow: '0 0 20px rgba(212,175,55,0.2)' }}
                   >
                     {isSessionActive ? formatTime(remainingTime) : '25:00'}
                   </motion.span>
@@ -588,7 +588,7 @@ const App: React.FC = () => {
                   <div className="text-[9px] uppercase tracking-[0.35em] leading-none mb-1" style={{ color: 'var(--nezumi)' }}>
                     {currentHostBlocked ? t('bushido.gateSealed') : t('bushido.currentTab')}
                   </div>
-                  <div className="font-mono text-xs truncate" style={{ color: currentHostBlocked ? 'var(--hi-iro)' : 'var(--kinari)' }}>
+                  <div className="font-mono text-xs truncate" style={{ color: currentHostBlocked ? 'var(--hi-iro)' : 'var(--text)' }}>
                     {currentHost}
                   </div>
                 </div>

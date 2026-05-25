@@ -36,7 +36,7 @@ const BlockedPage: React.FC = () => {
   const handleGoBack = () => window.history.back()
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden" style={{ background: 'var(--sumi)' }}>
+    <div className="min-h-screen w-full relative overflow-hidden" style={{ background: 'var(--bg1)' }}>
       {/* Asanoha pattern overlay */}
       <div
         className="absolute inset-0 pointer-events-none opacity-40"

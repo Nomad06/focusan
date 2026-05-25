@@ -80,7 +80,7 @@ const App: React.FC = () => {
   const chapter = CHAPTERS[step]
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--sumi)' }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--bg1)' }}>
       {/* Asanoha background */}
       <div className="absolute inset-0 pointer-events-none opacity-40" style={{ backgroundImage: 'var(--asanoha)' }} />
 
@@ -116,7 +116,7 @@ const App: React.FC = () => {
       {/* Brand top-left */}
       <div className="absolute top-8 left-10 z-10 flex items-center gap-3">
         <div className="hanko tilt seal-press" style={{ fontSize: 12, padding: '4px 6px' }}>士</div>
-        <div className="font-serif text-base" style={{ color: 'var(--kinari)' }}>Focusan</div>
+        <div className="font-serif text-base" style={{ color: 'var(--text)' }}>Focusan</div>
       </div>
 
       <div className="relative z-10 w-full min-h-screen flex flex-col items-center justify-center px-6 py-16">
@@ -167,7 +167,7 @@ const App: React.FC = () => {
               <div className="mb-2 text-[10px] uppercase tracking-[0.6em]" style={{ color: 'var(--kinpaku)' }}>
                 武 士 道
               </div>
-              <h1 className="font-serif text-6xl mb-3 tracking-tight" style={{ color: 'var(--kinari)' }}>
+              <h1 className="font-serif text-6xl mb-3 tracking-tight" style={{ color: 'var(--text)' }}>
                 Focusan
               </h1>
               <p
@@ -202,7 +202,7 @@ const App: React.FC = () => {
               <div className="mb-3 text-[10px] uppercase tracking-[0.5em]" style={{ color: 'var(--kinpaku)' }}>
                 {t('bushido.virtues')}
               </div>
-              <h2 className="font-serif text-4xl mb-4 tracking-tight" style={{ color: 'var(--kinari)' }}>
+              <h2 className="font-serif text-4xl mb-4 tracking-tight" style={{ color: 'var(--text)' }}>
                 七 つ の 徳
               </h2>
               <p
@@ -262,7 +262,7 @@ const App: React.FC = () => {
               <div className="mb-3 text-[10px] uppercase tracking-[0.5em]" style={{ color: 'var(--kinpaku)' }}>
                 {t('bushido.oath')}
               </div>
-              <h2 className="font-serif text-4xl mb-4 tracking-tight" style={{ color: 'var(--kinari)' }}>
+              <h2 className="font-serif text-4xl mb-4 tracking-tight" style={{ color: 'var(--text)' }}>
                 第 一 の 門
               </h2>
               <p
@@ -348,7 +348,7 @@ const App: React.FC = () => {
               <div className="mb-3 text-[10px] uppercase tracking-[0.5em]" style={{ color: 'var(--kinpaku)' }}>
                 {t('bushido.theWay')}
               </div>
-              <h2 className="font-serif text-4xl mb-4 tracking-tight" style={{ color: 'var(--kinari)' }}>
+              <h2 className="font-serif text-4xl mb-4 tracking-tight" style={{ color: 'var(--text)' }}>
                 準 備 完 了
               </h2>
               <p

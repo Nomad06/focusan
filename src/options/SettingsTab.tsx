@@ -6,6 +6,7 @@ import { t } from '../shared/i18n'
 import { StrictModeWarningModal } from './StrictModeWarningModal'
 import StrictLockModal from './StrictLockModal'
 import { getStrictMode } from '../shared/storage/storage'
+import { getCurrentTheme, setTheme } from '../shared/themes'
 
 export const SettingsTab: React.FC = () => {
   const [loading, setLoading] = useState(true)
@@ -16,6 +17,7 @@ export const SettingsTab: React.FC = () => {
   const [requireDesktopAppEnabled, setRequireDesktopAppEnabled] = useState(false)
   const [showStrictWarning, setShowStrictWarning] = useState(false)
   const [showStrictLock, setShowStrictLock] = useState(false)
+  const [themeId, setThemeId] = useState<string>('focusan')
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -32,6 +34,9 @@ export const SettingsTab: React.FC = () => {
 
         setChallengeModeEnabled(challenge.enabled)
         setRequireDesktopAppEnabled(requireDesktop.enabled)
+
+        const theme = await getCurrentTheme()
+        setThemeId(theme.metadata.id)
       } catch (err) {
         console.error('Failed to load settings:', err)
       } finally {
@@ -169,6 +174,69 @@ export const SettingsTab: React.FC = () => {
             </div>
 
           </div>
+        </div>
+      </div>
+
+      {/* ─── Theme picker — Kuro / Shiro ─── */}
+      <div className="washi-card p-8 border border-border/60 shadow-[var(--shadow-lg)]">
+        <div className="flex items-start gap-6 border-b border-border/40 pb-6 mb-6">
+          <div
+            className="w-16 h-16 flex items-center justify-center"
+            style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 2, color: 'var(--kinpaku)' }}
+          >
+            <span className="font-serif" style={{ fontSize: 28, fontWeight: 900 }}>色</span>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-2xl font-serif tracking-tight mb-1" style={{ color: 'var(--text)' }}>
+              {t('bushido.theWay') /* Theme */}
+            </h3>
+            <p className="text-sm font-serif italic" style={{ color: 'var(--muted)' }}>
+              Kuro (lacquer) or Shiro (washi paper).
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { id: 'focusan',       kanji: '黒', label: 'Kuro',  desc: 'Black lacquer · crimson seal',  bg: '#0B0A0A', fg: '#F2E9D8', accent: '#B82E2E' },
+            { id: 'focusan-shiro', kanji: '白', label: 'Shiro', desc: 'Washi paper · sumi ink',        bg: '#F4EDE0', fg: '#1A1410', accent: '#B82E2E' },
+          ].map(opt => {
+            const active = themeId === opt.id
+            return (
+              <button
+                key={opt.id}
+                onClick={async () => { setThemeId(opt.id); await setTheme(opt.id) }}
+                className="text-left p-5 transition-all"
+                style={{
+                  background: opt.bg,
+                  color: opt.fg,
+                  border: active ? `2px solid ${opt.accent}` : '2px solid transparent',
+                  outline: '1px solid var(--border)',
+                  borderRadius: 2,
+                  boxShadow: active ? `0 0 0 1px ${opt.accent}, 0 8px 24px -8px rgba(0,0,0,0.4)` : 'var(--shadow-sm)',
+                }}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div
+                    className="font-serif leading-none"
+                    style={{ fontSize: 48, fontWeight: 900, color: opt.accent }}
+                  >
+                    {opt.kanji}
+                  </div>
+                  {active && (
+                    <span
+                      className="text-[10px] uppercase tracking-[0.3em] px-2 py-1"
+                      style={{ background: opt.accent, color: opt.bg, borderRadius: 2 }}
+                    >
+                      Active
+                    </span>
+                  )}
+                </div>
+                <div className="font-serif text-lg mb-1">{opt.label}</div>
+                <div className="text-xs opacity-70">{opt.desc}</div>
+              </button>
+            )
+          })}
         </div>
       </div>
 

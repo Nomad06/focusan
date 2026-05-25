@@ -533,7 +533,7 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--sumi)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg1)' }}>
         <div className="text-center">
           <div className="hanko tilt seal-press mb-4 mx-auto" style={{ fontSize: 24, padding: '8px 14px', display: 'inline-flex' }}>士</div>
           <div className="text-xl font-serif mb-2 gold-leaf">{t('options.title')}</div>
@@ -544,12 +544,12 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex font-sans" style={{ background: 'var(--sumi)', color: 'var(--kinari)' }}>
+    <div className="min-h-screen flex font-sans" style={{ background: 'var(--bg1)', color: 'var(--text)' }}>
       {/* ─── Dojo Sidebar ─── */}
       <aside
         className="w-[280px] flex flex-col fixed h-full z-20 border-r"
         style={{
-          background: 'linear-gradient(180deg, var(--urushi) 0%, var(--sumi) 100%)',
+          background: 'linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 100%)',
           borderColor: 'var(--border)',
           boxShadow: '4px 0 24px -8px rgba(0,0,0,0.6)',
         }}
@@ -573,7 +573,7 @@ const App: React.FC = () => {
           >
             士
           </motion.div>
-          <h1 className="font-serif text-2xl tracking-tight mb-1" style={{ color: 'var(--kinari)' }}>Focusan</h1>
+          <h1 className="font-serif text-2xl tracking-tight mb-1" style={{ color: 'var(--text)' }}>Focusan</h1>
           <span className="text-[10px] font-serif tracking-[0.45em] uppercase" style={{ color: 'var(--kinpaku)' }}>
             武 士 道
           </span>
@@ -609,7 +609,7 @@ const App: React.FC = () => {
                   onClick={() => (window.location.hash = tab)}
                   className="relative w-full flex items-center gap-4 px-4 py-3.5 transition-all duration-300"
                   style={{
-                    color: isActive ? 'var(--kinari)' : 'var(--nezumi)',
+                    color: isActive ? 'var(--text)' : 'var(--nezumi)',
                     borderRadius: 2,
                   }}
                 >
@@ -672,7 +672,7 @@ const App: React.FC = () => {
                 {String(['sites','stats','achievements','settings'].indexOf(activeTab) + 1).padStart(2, '0')} / 04
               </span>
             </div>
-            <h2 className="font-serif text-3xl tracking-tight" style={{ color: 'var(--kinari)' }}>
+            <h2 className="font-serif text-3xl tracking-tight" style={{ color: 'var(--text)' }}>
               {activeTab === 'sites' && t('options.blocklist')}
               {activeTab === 'stats' && t('options.dashboard')}
               {activeTab === 'achievements' && t('options.achievements')}
