@@ -1,7 +1,6 @@
 /**
- * Zen Card Component
- * Displays Japanese kanji with meaning and contextual message
- * Used in Japanese theme for blocked page
+ * Zen Card — Bushidō verdict panel.
+ * Crimson hanko + massive kanji + ink-brush meaning + verdict message.
  */
 
 import React from 'react'
@@ -17,54 +16,75 @@ export const ZenCard: React.FC<ZenCardProps> = ({ zenPhrase, language }) => {
   const meaning = language === 'ru' ? zenPhrase.meaningRu : zenPhrase.meaning
   const message = language === 'ru' ? zenPhrase.messageRu : zenPhrase.message
 
-  const containerVariants = {
+  const container = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.3,
-        delayChildren: 0.5
-      }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.35, delayChildren: 0.4 } },
   }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 1, ease: "easeOut" as const }
-    }
+  const item = {
+    hidden: { opacity: 0, y: 24, filter: 'blur(8px)' },
+    visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 1.1, ease: 'easeOut' as const } },
   }
 
   return (
     <motion.div
-      variants={containerVariants}
+      variants={container}
       initial="hidden"
       animate="visible"
-      className="text-center mb-8 relative z-10"
+      className="text-center relative z-10 max-w-3xl mx-auto"
     >
-      {/* Large Kanji Title */}
-      <motion.h1
-        variants={itemVariants}
-        className="font-serif text-[clamp(3.5rem,10vw,5rem)] leading-none mb-2 text-sumi-black"
-        data-zen
-      >
-        {zenPhrase.kanji}
-      </motion.h1>
+      {/* Crimson seal frame around kanji */}
+      <motion.div variants={item} className="relative inline-block mb-8">
+        {/* Outer red frame */}
+        <div
+          className="absolute -inset-8 border-2 pointer-events-none"
+          style={{ borderColor: 'var(--akabeni)', opacity: 0.35, borderRadius: 2 }}
+        />
+        <div
+          className="absolute -inset-4 border pointer-events-none"
+          style={{ borderColor: 'var(--kinpaku)', opacity: 0.25, borderRadius: 2 }}
+        />
+        {/* Kanji */}
+        <h1
+          className="kanji-display relative px-12 py-6"
+          style={{
+            fontSize: 'clamp(6rem, 16vw, 12rem)',
+            lineHeight: 0.95,
+            letterSpacing: '0.04em',
+          }}
+          data-zen
+        >
+          {zenPhrase.kanji}
+        </h1>
+      </motion.div>
 
-      {/* Romanji + Meaning Subtitle */}
+      {/* Romaji — Meaning */}
+      <motion.div variants={item} className="mb-3">
+        <span
+          className="font-serif italic mr-3"
+          style={{ fontSize: 28, color: 'var(--kinpaku)', letterSpacing: '0.06em' }}
+        >
+          {zenPhrase.romanji}
+        </span>
+      </motion.div>
+
       <motion.h2
-        variants={itemVariants}
-        className="text-lg md:text-xl uppercase tracking-[0.2em] text-sumi-gray mb-6 font-light"
+        variants={item}
+        className="text-xs md:text-sm uppercase tracking-[0.5em] mb-10"
+        style={{ color: 'var(--nezumi)', fontWeight: 500 }}
       >
-        {zenPhrase.romanji} — {meaning}
+        — {meaning} —
       </motion.h2>
 
-      {/* Contextual Message */}
+      {/* Verdict message */}
       <motion.p
-        variants={itemVariants}
-        className="text-lg md:text-xl leading-relaxed text-sumi-black font-light max-w-2xl mx-auto whitespace-pre-line"
+        variants={item}
+        className="font-serif leading-relaxed whitespace-pre-line max-w-xl mx-auto"
+        style={{
+          fontSize: 'clamp(1.05rem, 1.6vw, 1.35rem)',
+          color: 'var(--kinari)',
+          fontWeight: 400,
+          letterSpacing: '0.01em',
+        }}
       >
         {message}
       </motion.p>

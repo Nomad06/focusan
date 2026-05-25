@@ -55,7 +55,11 @@ export function normalizeHost(input: string | null | undefined): string | null {
 
       // Domain validation: check for invalid characters
       // Allowed: letters, numbers, dots, hyphens (but not at start/end)
-      if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/i.test(domainOnly)) {
+      if (
+        !/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/i.test(
+          domainOnly
+        )
+      ) {
         return null
       }
 
@@ -148,7 +152,9 @@ export function isBlockedUrl(
 
     return blockedHosts.some(b => {
       const blockedHost = typeof b === 'string' ? b : b.host || ''
-      const normalizedBlocked = String(blockedHost).toLowerCase().replace(/^www\./, '')
+      const normalizedBlocked = String(blockedHost)
+        .toLowerCase()
+        .replace(/^www\./, '')
 
       // Exact match or subdomain
       return host === normalizedBlocked || host.endsWith('.' + normalizedBlocked)

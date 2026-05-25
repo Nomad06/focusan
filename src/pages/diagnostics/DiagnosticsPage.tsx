@@ -1,5 +1,5 @@
 /**
- * Diagnostics Page for Brain Defender
+ * Diagnostics Page for Focusan
  * Debug and troubleshooting tools
  */
 
@@ -8,11 +8,47 @@ import { messagingClient } from '../../shared/messaging/client'
 import { t } from '../../shared/i18n'
 import type { SiteObject } from '../../shared/storage/schemas'
 import type { Stats } from '../../shared/domain/stats'
+import { useToast } from '../../shared/components/Toast'
+
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    return false
+  }
+}
+
+const CopyButton: React.FC<{ text: string; label?: string }> = ({ text, label }) => {
+  const toast = useToast()
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      onClick={async () => {
+        const ok = await copyToClipboard(text)
+        if (ok) {
+          setCopied(true)
+          toast('Copied to clipboard', 'success')
+          setTimeout(() => setCopied(false), 1500)
+        } else {
+          toast('Copy failed', 'error')
+        }
+      }}
+      className="focus-ring text-[11px] font-mono uppercase tracking-widest px-2.5 py-1 rounded bg-white border border-border text-sumi-gray hover:text-accent hover:border-accent transition-colors"
+    >
+      {copied ? '✓ Copied' : label || 'Copy'}
+    </button>
+  )
+}
 
 const DiagnosticsPage: React.FC = () => {
+  const toast = useToast()
   const [sites, setSites] = useState<SiteObject[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
-  const [migrationStatus, setMigrationStatus] = useState<{ version: number; needsMigration: boolean } | null>(null)
+  const [migrationStatus, setMigrationStatus] = useState<{
+    version: number
+    needsMigration: boolean
+  } | null>(null)
   const [dnrRules, setDnrRules] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
@@ -31,8 +67,6 @@ const DiagnosticsPage: React.FC = () => {
       setSites(sitesData)
       setStats(statsData)
       setMigrationStatus(migrationData)
-
-      // Get DNR rules
       try {
         const rules = await chrome.declarativeNetRequest.getDynamicRules()
         setDnrRules(rules)
@@ -47,27 +81,25 @@ const DiagnosticsPage: React.FC = () => {
   }
 
   const handleRunMigrations = async () => {
-    if (!confirm('Run data migrations? This may take a moment.')) {
-      return
-    }
-
+    if (!confirm('Run data migrations? This may take a moment.')) return
     try {
       const result = await messagingClient.runMigrations()
-      alert(`Migrations result: ${JSON.stringify(result, null, 2)}`)
+      toast(`Migrations: ${JSON.stringify(result)}`, 'success')
       await loadDiagnostics()
     } catch (err) {
       console.error('[Diagnostics] Error running migrations:', err)
-      alert('Failed to run migrations')
+      toast('Failed to run migrations', 'error')
     }
   }
 
   const handleRebuildRules = async () => {
     try {
       const success = await messagingClient.rebuildRules()
-      alert(success ? 'Rules rebuilt successfully' : 'Failed to rebuild rules')
+      toast(success ? 'Rules rebuilt' : 'Failed to rebuild rules', success ? 'success' : 'error')
+      if (success) await loadDiagnostics()
     } catch (err) {
       console.error('[Diagnostics] Error rebuilding rules:', err)
-      alert('Failed to rebuild rules')
+      toast('Failed to rebuild rules', 'error')
     }
   }
 
@@ -78,21 +110,22 @@ const DiagnosticsPage: React.FC = () => {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `brain-defender-diagnostics-${Date.now()}.json`
+      a.download = `focusan-diagnostics-${Date.now()}.json`
       a.click()
       URL.revokeObjectURL(url)
+      toast('Export started', 'success')
     } catch (err) {
       console.error('[Diagnostics] Error exporting data:', err)
-      alert('Failed to export data')
+      toast('Failed to export data', 'error')
     }
   }
 
   if (loading) {
     return (
-      <div className="container" style={{ maxWidth: '920px', margin: '0 auto', padding: '20px' }}>
-        <div className="card" style={{ padding: '16px' }}>
-          <div className="h1">🔧 Diagnostics</div>
-          <div className="muted" style={{ marginTop: '12px', textAlign: 'center' }}>
+      <div className="min-h-screen bg-washi p-8 font-sans">
+        <div className="max-w-4xl mx-auto washi-card p-10 border border-border/60 shadow-[var(--shadow-lg)] flex flex-col items-center justify-center min-h-[50vh]">
+          <h1 className="text-3xl font-serif text-sumi-black tracking-tight mb-4">Diagnostics</h1>
+          <div className="text-sumi-gray tracking-widest uppercase text-sm animate-pulse">
             {t('common.loading')}
           </div>
         </div>
@@ -100,152 +133,205 @@ const DiagnosticsPage: React.FC = () => {
     )
   }
 
-  return (
-    <div className="container" style={{ maxWidth: '920px', margin: '0 auto', padding: '20px' }}>
-      <div className="card" style={{ padding: '16px' }}>
-        <div className="h1">🔧 Diagnostics & Troubleshooting</div>
-        <div className="muted" style={{ marginTop: '8px' }}>Debug information and tools</div>
+  const sysInfoRows: Array<[string, React.ReactNode]> = [
+    ['Version', '2.0.0'],
+    ['Migration Version', migrationStatus?.version ?? 'Unknown'],
+    [
+      'Needs Migration',
+      migrationStatus?.needsMigration ? (
+        <span className="text-nissho-orange">⚠ Yes</span>
+      ) : (
+        <span className="text-seiheki-blue">✓ No</span>
+      ),
+    ],
+    ['Total Sites', sites.length],
+    ['Total Blocks', stats?.totalBlocks || 0],
+    ['Streak Days', stats?.streakDays || 0],
+    ['Active DNR Rules', dnrRules.length],
+  ]
 
-        <div className="space"></div>
+  return (
+    <div className="min-h-screen bg-washi p-6 md:p-10 font-sans text-sumi-black relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay" />
+      <div className="max-w-4xl mx-auto relative z-10 space-y-6">
+        {/* Header */}
+        <header className="flex items-end justify-between gap-4 pb-4 border-b border-border/40">
+          <div>
+            <div className="text-[11px] font-mono tracking-[0.2em] uppercase text-sumi-gray mb-1">
+              Focusan / Diagnostics
+            </div>
+            <h1 className="text-3xl font-serif text-sumi-black tracking-tight">
+              System & Troubleshooting
+            </h1>
+          </div>
+          <button
+            onClick={loadDiagnostics}
+            className="focus-ring btn ghost sm"
+            title="Reload data"
+          >
+            ↻ Refresh
+          </button>
+        </header>
 
         {/* System Info */}
-        <div className="card" style={{ padding: '16px', background: 'var(--card2)', marginBottom: '12px' }}>
-          <div className="h2">System Information</div>
-          <div className="space"></div>
-          <table style={{ width: '100%', fontSize: '12px', fontFamily: 'var(--mono)' }}>
-            <tbody>
-              <tr>
-                <td style={{ padding: '4px 0', color: 'var(--muted)' }}>Version:</td>
-                <td style={{ padding: '4px 0' }}>2.0.0</td>
-              </tr>
-              <tr>
-                <td style={{ padding: '4px 0', color: 'var(--muted)' }}>Migration Version:</td>
-                <td style={{ padding: '4px 0' }}>{migrationStatus?.version || 'Unknown'}</td>
-              </tr>
-              <tr>
-                <td style={{ padding: '4px 0', color: 'var(--muted)' }}>Needs Migration:</td>
-                <td style={{ padding: '4px 0' }}>
-                  {migrationStatus?.needsMigration ? '⚠️ Yes' : '✅ No'}
-                </td>
-              </tr>
-              <tr>
-                <td style={{ padding: '4px 0', color: 'var(--muted)' }}>Total Sites:</td>
-                <td style={{ padding: '4px 0' }}>{sites.length}</td>
-              </tr>
-              <tr>
-                <td style={{ padding: '4px 0', color: 'var(--muted)' }}>Total Blocks:</td>
-                <td style={{ padding: '4px 0' }}>{stats?.totalBlocks || 0}</td>
-              </tr>
-              <tr>
-                <td style={{ padding: '4px 0', color: 'var(--muted)' }}>Streak Days:</td>
-                <td style={{ padding: '4px 0' }}>{stats?.streakDays || 0}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Blocked Sites */}
-        <div className="card" style={{ padding: '16px', background: 'var(--card2)', marginBottom: '12px' }}>
-          <div className="h2">Blocked Sites ({sites.length})</div>
-          <div className="space"></div>
-          {sites.length === 0 ? (
-            <div className="muted" style={{ textAlign: 'center', padding: '12px' }}>No sites blocked</div>
-          ) : (
-            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-              {sites.map(site => (
-                <div
-                  key={site.host}
-                  style={{
-                    padding: '6px 0',
-                    fontFamily: 'var(--mono)',
-                    fontSize: '12px',
-                    borderBottom: '1px solid var(--border)',
-                  }}
-                >
-                  <div>{site.host}</div>
-                  {site.category && (
-                    <div className="muted" style={{ fontSize: '10px' }}>Category: {site.category}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* DNR Rules */}
-        <div className="card" style={{ padding: '16px', background: 'var(--card2)', marginBottom: '12px' }}>
-          <div className="h2">Active DNR Rules ({dnrRules.length})</div>
-          <div className="space"></div>
-          {dnrRules.length === 0 ? (
-            <div className="muted" style={{ textAlign: 'center', padding: '12px' }}>No DNR rules active</div>
-          ) : (
-            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-              {dnrRules.map(rule => (
-                <div
-                  key={rule.id}
-                  style={{
-                    padding: '6px 0',
-                    fontFamily: 'var(--mono)',
-                    fontSize: '11px',
-                    borderBottom: '1px solid var(--border)',
-                  }}
-                >
-                  <div><strong>Rule ID:</strong> {rule.id}</div>
-                  <div><strong>Priority:</strong> {rule.priority}</div>
-                  <div><strong>Action:</strong> {rule.action.type}</div>
-                  {rule.action.redirect?.extensionPath && (
-                    <div className="muted">Path: {rule.action.redirect.extensionPath}</div>
-                  )}
-                  {rule.action.redirect?.url && (
-                    <div className="muted">URL: {rule.action.redirect.url}</div>
-                  )}
-                  <div className="muted">Filter: {rule.condition.regexFilter}</div>
-                  <div className="muted">Types: {rule.condition.resourceTypes?.join(', ')}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <section className="washi-card p-6 border border-border/50 shadow-sm">
+          <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-sumi-gray mb-5">
+            System Information
+          </h2>
+          <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+            {sysInfoRows.map(([k, v]) => (
+              <div
+                key={k}
+                className="flex items-center justify-between gap-4 py-2 border-b border-border/20 last:border-0"
+              >
+                <dt className="text-sm text-sumi-gray">{k}</dt>
+                <dd className="text-sm font-mono font-medium text-sumi-black">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
 
         {/* Actions */}
-        <div className="card" style={{ padding: '16px', background: 'var(--card2)', marginBottom: '12px' }}>
-          <div className="h2">Actions</div>
-          <div className="space"></div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button className="btn" onClick={handleRebuildRules}>
-              🔄 Rebuild DNR Rules
+        <section className="washi-card p-6 border border-border/50 shadow-sm">
+          <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-sumi-gray mb-5">
+            Actions
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            <button className="btn secondary focus-ring" onClick={handleRebuildRules}>
+              ↻ Rebuild DNR Rules
+            </button>
+            <button className="btn secondary focus-ring" onClick={handleExportData}>
+              ⤓ Export All Data
+            </button>
+            <button
+              className="btn ghost focus-ring"
+              onClick={() => window.location.reload()}
+            >
+              ⟳ Reload Page
             </button>
             {migrationStatus?.needsMigration && (
-              <button className="btn primary" onClick={handleRunMigrations}>
-                ⚡ Run Data Migrations
+              <button className="btn primary focus-ring" onClick={handleRunMigrations}>
+                ⚡ Run Migrations
               </button>
             )}
-            <button className="btn" onClick={handleExportData}>
-              💾 Export All Data
-            </button>
-            <button className="btn" onClick={() => window.location.reload()}>
-              🔃 Reload Page
-            </button>
           </div>
-        </div>
+        </section>
 
-        {/* Raw Data */}
-        <details>
-          <summary style={{ cursor: 'pointer', padding: '12px', background: 'var(--card2)', borderRadius: '8px' }}>
-            <strong>View Raw Data (JSON)</strong>
+        {/* Advanced (collapsible) */}
+        <details className="washi-card border border-border/50 shadow-sm group">
+          <summary className="px-6 py-4 cursor-pointer list-none flex items-center justify-between hover:bg-black/[0.02] transition-colors rounded-t-lg">
+            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-sumi-gray">
+              Advanced
+            </h2>
+            <span className="text-sumi-gray group-open:rotate-180 transition-transform duration-300">
+              ▾
+            </span>
           </summary>
-          <div className="card" style={{ padding: '16px', background: 'var(--card2)', marginTop: '12px' }}>
-            <div className="h2">Sites</div>
-            <pre style={{ fontSize: '10px', overflowX: 'auto', background: 'var(--card)', padding: '12px', borderRadius: '4px' }}>
-              {JSON.stringify(sites, null, 2)}
-            </pre>
-            <div className="space"></div>
-            <div className="h2">Stats</div>
-            <pre style={{ fontSize: '10px', overflowX: 'auto', background: 'var(--card)', padding: '12px', borderRadius: '4px' }}>
-              {JSON.stringify(stats, null, 2)}
-            </pre>
+          <div className="px-6 pb-6 space-y-6">
+            {/* Blocked Sites */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-sumi-gray">
+                  Blocked Sites ({sites.length})
+                </h3>
+                <CopyButton text={JSON.stringify(sites, null, 2)} label="Copy JSON" />
+              </div>
+              {sites.length === 0 ? (
+                <div className="text-center p-6 text-sumi-gray/70 italic text-sm bg-white/40 rounded-lg border border-border/30">
+                  No sites blocked
+                </div>
+              ) : (
+                <div className="max-h-[260px] overflow-y-auto custom-scrollbar bg-white/50 rounded-lg border border-border/30 divide-y divide-border/20">
+                  {sites.map(site => (
+                    <div key={site.host} className="py-2.5 px-4 font-mono text-sm">
+                      <div className="text-sumi-black">{site.host}</div>
+                      {site.category && (
+                        <div className="text-[11px] text-sumi-gray mt-0.5">
+                          {site.category}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* DNR Rules */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-sumi-gray">
+                  Active DNR Rules ({dnrRules.length})
+                </h3>
+                <CopyButton text={JSON.stringify(dnrRules, null, 2)} label="Copy JSON" />
+              </div>
+              {dnrRules.length === 0 ? (
+                <div className="text-center p-6 text-sumi-gray/70 italic text-sm bg-white/40 rounded-lg border border-border/30">
+                  No DNR rules active
+                </div>
+              ) : (
+                <div className="max-h-[280px] overflow-y-auto custom-scrollbar bg-white/50 rounded-lg border border-border/30 divide-y divide-border/20">
+                  {dnrRules.map(rule => (
+                    <div
+                      key={rule.id}
+                      className="py-3 px-4 font-mono text-xs grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 leading-relaxed"
+                    >
+                      <span className="text-sumi-gray">id</span>
+                      <span className="font-medium">{rule.id}</span>
+                      <span className="text-sumi-gray">priority</span>
+                      <span>{rule.priority}</span>
+                      <span className="text-sumi-gray">action</span>
+                      <span className="text-seiheki-blue">{rule.action.type}</span>
+                      <span className="text-sumi-gray">filter</span>
+                      <span className="text-accent bg-accent/5 px-1 rounded break-all">
+                        {rule.condition.regexFilter}
+                      </span>
+                      {rule.condition.resourceTypes && (
+                        <>
+                          <span className="text-sumi-gray">types</span>
+                          <span>{rule.condition.resourceTypes.join(', ')}</span>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Raw Data */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-sumi-gray">
+                  Raw JSON
+                </h3>
+                <div className="flex gap-2">
+                  <CopyButton text={JSON.stringify({ sites, stats }, null, 2)} label="Copy All" />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-mono uppercase tracking-widest text-sumi-gray mb-1.5">
+                    sites
+                  </div>
+                  <pre className="text-[12px] overflow-x-auto bg-sumi-black/95 text-emerald-300/95 rounded-lg p-4 max-h-[280px] overflow-y-auto custom-scrollbar font-mono leading-relaxed">
+                    {JSON.stringify(sites, null, 2)}
+                  </pre>
+                </div>
+                <div>
+                  <div className="text-[11px] font-mono uppercase tracking-widest text-sumi-gray mb-1.5">
+                    stats
+                  </div>
+                  <pre className="text-[12px] overflow-x-auto bg-sumi-black/95 text-emerald-300/95 rounded-lg p-4 max-h-[280px] overflow-y-auto custom-scrollbar font-mono leading-relaxed">
+                    {JSON.stringify(stats, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            </div>
           </div>
         </details>
+
+        <div className="text-center py-4 opacity-40 text-[10px] font-mono tracking-[0.2em] uppercase">
+          Focusan System Diagnostics
+        </div>
       </div>
     </div>
   )

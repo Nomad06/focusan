@@ -58,7 +58,7 @@ export function applyTheme(theme: Theme): void {
   }
 
   // Remove old theme custom CSS
-  document.querySelectorAll('style[id^="theme-custom-"]').forEach((style) => {
+  document.querySelectorAll('style[id^="theme-custom-"]').forEach(style => {
     if (style.id !== customStyleId) {
       style.remove()
     }
@@ -77,4 +77,3 @@ export async function initializeTheme(): Promise<void> {
 // Re-export types and themes for convenience
 export type { Theme } from './types'
 export { focusanTheme }
-

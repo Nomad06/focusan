@@ -5,11 +5,11 @@
  */
 
 export enum SoundType {
-  TEMPLE_BELL = 'temple_bell',         // Session start
-  SOFT_GONG = 'soft_gong',            // Session end
-  BAMBOO_STRIKE = 'bamboo_strike',     // Site blocked
-  KOTO_PLUCK = 'koto_pluck',          // Achievement unlocked
-  WIND_CHIME = 'wind_chime',          // Notification
+  TEMPLE_BELL = 'temple_bell', // Session start
+  SOFT_GONG = 'soft_gong', // Session end
+  BAMBOO_STRIKE = 'bamboo_strike', // Site blocked
+  KOTO_PLUCK = 'koto_pluck', // Achievement unlocked
+  WIND_CHIME = 'wind_chime', // Notification
   MEDITATION_BELL = 'meditation_bell', // Breath exercise
 }
 
@@ -205,7 +205,7 @@ class SoundManager {
     const now = ctx.currentTime
 
     // Major Pentatonic (F, G, A, C, D) - very neutral and happy
-    const notes = [698.46, 783.99, 880.00, 1046.50]
+    const notes = [698.46, 783.99, 880.0, 1046.5]
     const randomNote = notes[Math.floor(Math.random() * notes.length)]
 
     const osc = ctx.createOscillator()
@@ -289,7 +289,8 @@ export enum AmbientSound {
  */
 class AmbientSoundManager {
   private audioContext: AudioContext | null = null
-  private activeNodes: Map<AmbientSound, { oscillators: OscillatorNode[]; gains: GainNode[] }> = new Map()
+  private activeNodes: Map<AmbientSound, { oscillators: OscillatorNode[]; gains: GainNode[] }> =
+    new Map()
   private volume: number = 0.15
 
   private getAudioContext(): AudioContext {
@@ -504,7 +505,10 @@ class AmbientSoundManager {
 
     oscillators.push(lfo)
     gains.push(gain)
-    this.activeNodes.set(AmbientSound.WATER_STREAM, { oscillators: [noise as any, ...oscillators], gains })
+    this.activeNodes.set(AmbientSound.WATER_STREAM, {
+      oscillators: [noise as any, ...oscillators],
+      gains,
+    })
   }
 
   /**

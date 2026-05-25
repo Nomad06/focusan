@@ -123,6 +123,98 @@ export const JAPANESE_ZEN_PHRASES: ZenPhrase[] = [
     messageRu: 'Действуйте без излишних размышлений.\nМастер движется без колебаний.',
     theme: 'focus',
   },
+
+  // ─── 武士道 — The Seven Virtues of Bushidō ───
+  {
+    kanji: '義',
+    romanji: 'Gi',
+    meaning: 'Rectitude — the right decision',
+    meaningRu: 'Праведность — верное решение',
+    message: 'A samurai chooses the harder right over the easier wrong.\nClose this tab. Return to your path.',
+    messageRu: 'Самурай выбирает трудное правое, а не лёгкое неправое.\nЗакройте вкладку. Вернитесь на свой путь.',
+    theme: 'discipline',
+  },
+  {
+    kanji: '勇',
+    romanji: 'Yū',
+    meaning: 'Courage — to do what is feared',
+    meaningRu: 'Мужество — делать то, чего боишься',
+    message: 'Courage is not absence of distraction.\nIt is moving past it without flinching.',
+    messageRu: 'Мужество — это не отсутствие отвлечений.\nЭто способность пройти мимо них, не дрогнув.',
+    theme: 'strength',
+  },
+  {
+    kanji: '仁',
+    romanji: 'Jin',
+    meaning: 'Benevolence — to your own future',
+    meaningRu: 'Благосклонность — к своему будущему',
+    message: 'Be merciful to the one you will become.\nDo not steal hours from tomorrow.',
+    messageRu: 'Будь милосерден к тому, кем ты станешь.\nНе кради часы у завтра.',
+    theme: 'mindfulness',
+  },
+  {
+    kanji: '礼',
+    romanji: 'Rei',
+    meaning: 'Respect — for the work',
+    meaningRu: 'Уважение — к делу',
+    message: 'Honor the task before you.\nDistraction is a form of disrespect.',
+    messageRu: 'Чти задачу, что перед тобой.\nОтвлечение — это форма неуважения.',
+    theme: 'discipline',
+  },
+  {
+    kanji: '誠',
+    romanji: 'Makoto',
+    meaning: 'Sincerity — speak with action',
+    meaningRu: 'Искренность — говори делами',
+    message: 'You said you would focus.\nLet the doing become the word.',
+    messageRu: 'Ты сказал, что будешь сосредоточен.\nПусть дело станет словом.',
+    theme: 'discipline',
+  },
+  {
+    kanji: '名誉',
+    romanji: 'Meiyo',
+    meaning: 'Honor — the verdict of self',
+    meaningRu: 'Честь — приговор себе',
+    message: 'No one watches but you.\nThat is the only audience that matters.',
+    messageRu: 'Никто не смотрит, кроме тебя.\nЭто единственный зритель, что имеет значение.',
+    theme: 'strength',
+  },
+  {
+    kanji: '忠義',
+    romanji: 'Chūgi',
+    meaning: 'Loyalty — to your purpose',
+    meaningRu: 'Верность — своей цели',
+    message: 'A warrior serves what they have chosen.\nReturn to the work you swore to do.',
+    messageRu: 'Воин служит тому, что он избрал.\nВернись к делу, которому ты дал клятву.',
+    theme: 'discipline',
+  },
+  {
+    kanji: '克己',
+    romanji: 'Kokki',
+    meaning: 'Self-mastery',
+    meaningRu: 'Самообладание',
+    message: 'The greatest opponent sits at this desk.\nDefeat them with stillness.',
+    messageRu: 'Величайший противник сидит за этим столом.\nПобеди его тишиной.',
+    theme: 'discipline',
+  },
+  {
+    kanji: '刀',
+    romanji: 'Katana',
+    meaning: 'The blade — your will',
+    meaningRu: 'Клинок — твоя воля',
+    message: 'A blade dulls without use.\nA mind dulls with misuse. Cut deeper.',
+    messageRu: 'Клинок тупеет без дела.\nУм тупеет от дурного дела. Руби глубже.',
+    theme: 'focus',
+  },
+  {
+    kanji: '道',
+    romanji: 'Dō',
+    meaning: 'The Way',
+    meaningRu: 'Путь',
+    message: 'There is no destination, only the Way.\nThis tab is not the Way.',
+    messageRu: 'Нет цели — есть лишь Путь.\nЭта вкладка — не Путь.',
+    theme: 'mindfulness',
+  },
 ]
 
 /**
@@ -137,27 +229,27 @@ export interface ZenQuote {
 export const JAPANESE_ZEN_QUOTES: ZenQuote[] = [
   {
     text: 'The obstacle is the path.',
-    textRu: 'Препятствие и есть путь.'
+    textRu: 'Препятствие и есть путь.',
   },
   {
     text: 'The journey of a thousand miles begins with a single step.',
-    textRu: 'Путешествие в тысячу ли начинается с одного шага.'
+    textRu: 'Путешествие в тысячу ли начинается с одного шага.',
   },
   {
     text: 'Fall down seven times, stand up eight.',
-    textRu: 'Упади семь раз, встань восемь.'
+    textRu: 'Упади семь раз, встань восемь.',
   },
   {
     text: 'A smooth sea never made a skilled sailor.',
-    textRu: 'Спокойное море не сделает матроса искусным.'
+    textRu: 'Спокойное море не сделает матроса искусным.',
   },
   {
     text: 'Wherever you are, be all there.',
-    textRu: 'Где бы вы ни были, будьте там полностью.'
+    textRu: 'Где бы вы ни были, будьте там полностью.',
   },
   {
     text: 'The quieter you become, the more you can hear.',
-    textRu: 'Чем тише вы становитесь, тем больше вы слышите.'
+    textRu: 'Чем тише вы становитесь, тем больше вы слышите.',
   },
   {
     text: 'Do not seek to follow in the footsteps of the wise. Seek what they sought.',
@@ -170,7 +262,30 @@ export const JAPANESE_ZEN_QUOTES: ZenQuote[] = [
   },
   {
     text: 'If you understand, things are just as they are. If you do not understand, things are just as they are.',
-    textRu: 'Понимаете вы или нет, вещи такие, какие они есть.'
+    textRu: 'Понимаете вы или нет, вещи такие, какие они есть.',
+  },
+  {
+    text: 'Perceive that which cannot be seen with the eye.',
+    textRu: 'Воспринимай то, чего не увидеть глазом.',
+    author: 'Miyamoto Musashi',
+  },
+  {
+    text: 'The way of the warrior is resolute acceptance of death.',
+    textRu: 'Путь воина — решительное принятие смерти.',
+    author: 'Yamamoto Tsunetomo',
+  },
+  {
+    text: 'It is not the mountain we conquer, but ourselves.',
+    textRu: 'Мы покоряем не гору — мы покоряем себя.',
+  },
+  {
+    text: 'When you have come to the end of all the light you know, faith is to step into the darkness.',
+    textRu: 'Когда кончается свет, который ты знал, — вера это шаг во тьму.',
+  },
+  {
+    text: 'Do nothing which is of no use.',
+    textRu: 'Не делай того, в чём нет пользы.',
+    author: 'Miyamoto Musashi',
   },
 ]
 

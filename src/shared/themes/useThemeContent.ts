@@ -72,6 +72,6 @@ export function useThemeContent(): UseThemeContentReturn {
 
   return {
     theme,
-    isLoading
+    isLoading,
   }
 }

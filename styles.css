@@ -1,102 +1,89 @@
-/* Import Japanese Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;500;600;700&display=swap');
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  FOCUSAN — BUSHIDŌ                                              */
+/*  Black lacquer · Crimson seal · Gold leaf                       */
+/*  武士道 — The Way of the Warrior                                 */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@300;400;500;700;900&family=Shippori+Mincho:wght@500;700;900&display=swap');
 
 @import "tailwindcss";
 @config "./tailwind.config.js";
 
 :root {
-  /* Japanese Color Palette - Inspired by traditional aesthetics */
-  --washi-white: #faf7f2;
-  /* Washi paper background */
-  --shiro-white: #fdfbf7;
-  /* Pure white, slightly warm to match washi */
-  --sumi-black: #1a1a1a;
-  /* Sumi ink black */
-  --sumi-gray: #4a4a4a;
-  /* Lighter sumi gray */
-  --kinari-cream: #f5f1e8;
-  /* Natural cream */
-  --seiheki-blue: #2e5f6f;
-  /* Deep blue-green */
-  --ai-indigo: #165e83;
-  /* Traditional indigo */
-  --beni-red: #c73e3a;
-  /* Beni (safflower) red */
-  --sakura-pink: #ffc0cb;
-  /* Cherry blossom */
-  --gold-accent: #d4af37;
-  /* Gold accent */
-  --bamboo-green: #6b8e23;
-  /* Bamboo green */
-  --mist-gray: #d8d8d8;
-  /* Morning mist */
+  /* ── Bushidō palette (new canonical names) ── */
+  --sumi:          #0B0A0A;   /* deep ink */
+  --urushi:        #141110;   /* black lacquer */
+  --kokutan:       #1A1614;   /* ebony panel */
+  --koge:          #221C18;   /* charred wood */
+  --akabeni:       #B82E2E;   /* crimson hanko ink */
+  --enji:          #7A1818;   /* sealed crimson */
+  --hi-iro:        #E63946;   /* flame red */
+  --kinpaku:       #D4AF37;   /* gold leaf */
+  --ougon:         #9C8B3F;   /* antique gold */
+  --kinari:        #F2E9D8;   /* unbleached silk */
+  --shiro:         #FFFFFF;
+  --nezumi:        #8A7E6F;   /* mouse-grey */
+  --sabi:          #5C4A38;   /* patina brown */
 
-  /* Semantic colors mapped to Japanese palette */
-  --bg1: var(--washi-white);
-  --bg2: var(--shiro-white);
-  --card: var(--shiro-white);
-  --card2: var(--kinari-cream);
-  --text: var(--sumi-black);
-  --muted: var(--sumi-gray);
-  --border: rgba(46, 95, 111, 0.15);
-  /* Seiheki blue with low opacity */
-  --accent: var(--seiheki-blue);
-  --accent2: var(--ai-indigo);
-  --danger: var(--beni-red);
-  --success: var(--bamboo-green);
-  --gold: var(--gold-accent);
+  /* ── Legacy aliases — remap to invert tone (dark UI) ──
+     Old tokens kept their NAMES but their VISUAL ROLE flips:
+       - tokens that were used as backgrounds  → dark surfaces
+       - tokens that were used as foregrounds  → silk (light)
+       - blue/green accents → crimson/gold
+  */
+  --washi-white:   #0B0A0A;            /* old bg → dark */
+  --shiro-white:   #1A1614;            /* old card bg → ebony */
+  --sumi-black:    #F2E9D8;            /* old text → silk */
+  --sumi-gray:     #8A7E6F;            /* muted → mouse */
+  --kinari-cream:  #221C18;            /* pill bg → charred */
+  --seiheki-blue:  #B82E2E;            /* old accent → crimson */
+  --ai-indigo:     #7A1818;
+  --beni-red:      #E63946;
+  --sakura-pink:   #D4AF37;
+  --gold-accent:   #D4AF37;
+  --bamboo-green:  #9C8B3F;
+  --mist-gray:     #5C4A38;
+  --nissho-orange: #B82E2E;
 
-  /* Shadows - subtle like shoji screens */
-  --shadow: 0 4px 6px -1px rgba(46, 95, 111, 0.05), 0 2px 4px -1px rgba(46, 95, 111, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(46, 95, 111, 0.08), 0 4px 6px -2px rgba(46, 95, 111, 0.04);
-  --glow: 0 0 20px rgba(212, 175, 55, 0.3);
-  --lantern-glow: 0 0 15px rgba(212, 175, 55, 0.5), 0 0 30px rgba(212, 175, 55, 0.2);
+  /* ── Semantic tokens (use canonical names, not legacy) ── */
+  --bg1:     #0B0A0A;
+  --bg2:     var(--urushi);
+  --card:    var(--kokutan);
+  --card2:   rgba(34, 28, 24, 0.7);
+  --text:    var(--kinari);
+  --muted:   var(--nezumi);
+  --border:  rgba(212, 175, 55, 0.12);
+  --accent:  var(--akabeni);
+  --accent2: var(--enji);
+  --danger:  var(--hi-iro);
+  --success: var(--ougon);
+  --gold:    var(--kinpaku);
 
-  /* Border radius - minimal and architectural */
-  --radius: 6px;
-  --radius-lg: 12px;
+  /* ── Shadows — heavy lacquer ── */
+  --shadow-sm:    0 1px 2px rgba(0,0,0,0.6);
+  --shadow:       0 6px 20px -4px rgba(0,0,0,0.7), 0 2px 6px -2px rgba(0,0,0,0.4);
+  --shadow-lg:    0 14px 32px -6px rgba(0,0,0,0.8), 0 6px 10px -3px rgba(0,0,0,0.45);
+  --shadow-float: 0 24px 48px -10px rgba(0,0,0,0.85), 0 8px 14px -4px rgba(184,46,46,0.15);
+  --glow:         0 0 24px rgba(212, 175, 55, 0.45);
+  --lantern-glow: 0 0 22px rgba(212, 175, 55, 0.55), 0 0 44px rgba(212, 175, 55, 0.20);
+  --seal-glow:    0 0 0 1px rgba(184,46,46,0.55), 0 0 18px -2px rgba(184,46,46,0.42);
+  --glass-border: inset 0 0 0 1px rgba(212, 175, 55, 0.06);
 
-  /* Typography - Japanese-inspired */
-  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --sans: "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-  --serif: "Noto Serif JP", "Hiragino Mincho ProN", Georgia, "Times New Roman", serif;
+  /* ── Radii — sharp dojo geometry ── */
+  --radius-sm:   2px;
+  --radius:      3px;
+  --radius-lg:   4px;
+  --radius-full: 9999px;
 
-  /* Spacing based on traditional Japanese proportions */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
+  /* ── Typography ── */
+  --mono:  ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --sans:  "Inter", "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  --serif: "Shippori Mincho", "Noto Serif JP", "Hiragino Mincho ProN", Georgia, serif;
 
-  /* Focusan Extended Palette */
-  --color-mizu: #E0F2F1;
-  --color-take: #4A6E46;
-  --color-akabeni: #C44536;
-  --color-stone: #8C8C8C;
-  --color-gold: #D4AF37;
-
-  --shadow-float: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-
-  /* Texture - Lightweight CSS Dot Pattern (Replaces heavy SVG filter) */
-  --noise-pattern: none;
-}
-
-/* Midnight Zen Theme (Dark Mode) */
-[data-theme="midnight"] {
-  --washi-white: #0f1219;
-  --shiro-white: #1a1f2e;
-  --sumi-black: #e2e8f0;
-  --sumi-gray: #94a3b8;
-  --kinari-cream: #1e293b;
-  --card: #1e293b;
-  --card2: #253248;
-  --border: #334155;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --text: var(--sumi-black);
-  --muted: var(--sumi-gray);
-  --bg1: var(--washi-white);
-  --bg2: var(--shiro-white);
-  --accent: #38bdf8;
+  /* ── Patterns ── */
+  --noise-pattern: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  --asanoha:       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'><g fill='none' stroke='%23D4AF37' stroke-opacity='0.045' stroke-width='0.6'><path d='M30 0 L60 30 L30 60 L0 30 Z'/><path d='M30 0 L30 60 M0 30 L60 30 M0 0 L60 60 M60 0 L0 60'/></g></svg>");
+  --seigaiha-faint: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'><path d='M0 20 A20 20 0 0 1 40 20' fill='none' stroke='%23B82E2E' stroke-opacity='0.06' stroke-width='0.8'/></svg>");
 }
 
 body {
@@ -104,216 +91,510 @@ body {
   font-family: var(--sans);
   color: var(--text);
   background-color: var(--bg1);
-  /* Anti-aliasing for better font rendering */
+  background-image:
+    radial-gradient(ellipse at top, rgba(184,46,46,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at bottom right, rgba(212,175,55,0.03) 0%, transparent 60%),
+    var(--asanoha);
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
 a {
-  color: var(--accent);
+  color: var(--gold);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
 }
-
 a:hover {
-  text-decoration: underline;
-  text-decoration-color: var(--accent);
-  text-underline-offset: 3px;
+  color: var(--kinpaku);
+  border-bottom-color: var(--kinpaku);
+  text-shadow: 0 0 10px rgba(212,175,55,0.4);
 }
 
-/* Base Components */
+/* ━━━ BUTTONS ━━━ Press the seal */
 .btn {
-  @apply px-4 py-2 rounded-md font-medium transition-all duration-200 cursor-pointer flex items-center justify-center gap-2;
+  @apply px-4 py-2 font-medium transition-all duration-200 cursor-pointer inline-flex items-center justify-center gap-2 select-none uppercase tracking-wider text-xs;
+  border-radius: var(--radius-sm);
+  outline: none;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--bg1), 0 0 0 4px var(--akabeni);
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: translateY(1px) scale(0.98);
+}
+
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.6);
 }
 
 .btn.primary {
-  @apply bg-accent text-white shadow-sm hover:opacity-90 hover:shadow-md border border-transparent;
+  background: linear-gradient(180deg, var(--akabeni) 0%, var(--enji) 100%);
+  color: var(--kinari);
+  border: 1px solid var(--akabeni);
+  box-shadow: var(--seal-glow), inset 0 1px 0 rgba(255,255,255,0.12);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+}
+.btn.primary:hover {
+  background: linear-gradient(180deg, #C93838 0%, var(--akabeni) 100%);
+  box-shadow: var(--seal-glow), 0 8px 24px -6px rgba(184,46,46,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
 }
 
 .btn.secondary {
-  @apply bg-white border border-border text-sumi-black hover:bg-gray-50 hover:border-gray-300;
+  background: transparent;
+  color: var(--kinari);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+.btn.secondary:hover {
+  border-color: var(--kinpaku);
+  color: var(--kinpaku);
+  background: rgba(212,175,55,0.06);
+  box-shadow: 0 0 16px -4px rgba(212,175,55,0.3);
 }
 
 .btn.danger {
-  @apply bg-white border border-danger text-danger hover:bg-danger hover:text-white transition-colors shadow-sm;
+  background: transparent;
+  color: var(--hi-iro);
+  border: 1px solid var(--hi-iro);
+}
+.btn.danger:hover {
+  background: var(--hi-iro);
+  color: var(--sumi-black);
+  box-shadow: 0 0 18px -2px rgba(230,57,70,0.5);
 }
 
-/* Authentic Japanese Classes */
-.shoji-slide-enter {
-  opacity: 0;
-  transform: translateX(10px);
+.btn.ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+}
+.btn.ghost:hover {
+  color: var(--kinari);
+  background: rgba(212,175,55,0.05);
 }
 
-.shoji-slide-enter-active {
-  opacity: 1;
-  transform: translateX(0);
-  transition: opacity 300ms, transform 300ms cubic-bezier(0.2, 0.0, 0.2, 1);
+.btn.sm  { @apply px-3 py-1.5 text-[10px]; }
+.btn.lg  { @apply px-7 py-3 text-sm; }
+.btn.icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 2px;
 }
 
-.shoji-slide-exit {
-  opacity: 1;
-  transform: translateX(0);
+/* ━━━ INPUTS ━━━ Ink brushed on parchment */
+.zen-input {
+  @apply w-full px-4 py-2.5 text-sm transition-all;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--kinari);
+  font-family: var(--sans);
+  outline: none;
 }
 
-.shoji-slide-exit-active {
-  opacity: 0;
-  transform: translateX(-10px);
-  transition: opacity 200ms, transform 200ms cubic-bezier(0.2, 0.0, 0.2, 1);
+.zen-input::placeholder {
+  color: var(--nezumi);
+  font-style: italic;
+  opacity: 0.55;
 }
 
-/* Washi Card Effect */
+.zen-input:focus {
+  border-color: var(--akabeni);
+  box-shadow: 0 0 0 2px rgba(184,46,46,0.18), inset 0 1px 0 rgba(212,175,55,0.06);
+  background: rgba(0,0,0,0.55);
+}
+
+.zen-input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg1), 0 0 0 4px var(--akabeni);
+  border-radius: var(--radius-sm);
+}
+
+/* ━━━ Keyboard shortcut chip ━━━ */
+.kbd {
+  @apply inline-flex items-center justify-center text-[10px] font-mono px-1.5 py-0.5;
+  background: rgba(212,175,55,0.08);
+  border: 1px solid rgba(212,175,55,0.2);
+  color: var(--gold);
+  border-radius: 2px;
+  min-width: 18px;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.4);
+}
+
+/* ━━━ Toasts ━━━ Brush-stamped notices */
+.toast-stack {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  max-width: 380px;
+}
+
+.toast {
+  pointer-events: auto;
+  padding: 12px 16px 12px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--kokutan);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
+  color: var(--kinari);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: toast-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.toast::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--akabeni);
+}
+
+.toast.error   { color: var(--hi-iro); }
+.toast.error::before   { background: var(--hi-iro); }
+.toast.success { color: var(--gold); }
+.toast.success::before { background: var(--gold); }
+.toast.info::before    { background: var(--akabeni); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ━━━ Reduced motion ━━━ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  LEGACY UTILITY OVERRIDES — paint white→dark   */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Background overrides — flip Tailwind whites/grays to Bushido surfaces.
+   text-white intentionally NOT touched (still light foreground).
+   Use attribute selectors so any opacity variant (/40, /50, /60…) is caught. */
+[class*="bg-white"]:not([class*="text-white"]):not([class*="border-white"]),
+[class*="hover:bg-white"]:hover,
+[class*="bg-gray-"]:not([class*="text-gray"]):not([class*="border-gray"]),
+[class*="hover:bg-gray-"]:hover {
+  background-color: var(--kokutan) !important;
+}
+
+/* Re-tune the specific opacity grades for translucent layering on the dark base */
+.bg-white\/40, .bg-white\/50            { background-color: rgba(26, 22, 20, 0.55) !important; }
+.bg-white\/60, .bg-white\/70            { background-color: rgba(26, 22, 20, 0.65) !important; }
+.bg-white\/80, .bg-white\/90            { background-color: rgba(26, 22, 20, 0.85) !important; }
+.hover\:bg-white\/60:hover,
+.hover\:bg-white\/50:hover              { background-color: rgba(212, 175, 55, 0.05) !important; }
+.hover\:bg-white\/80:hover              { background-color: rgba(212, 175, 55, 0.07) !important; }
+.bg-gray-50\/30, .bg-gray-50\/50        { background-color: rgba(34, 28, 24, 0.45) !important; }
+.bg-gray-100\/50                        { background-color: rgba(20, 17, 16, 0.55) !important; }
+.hover\:bg-gray-50:hover                { background-color: var(--koge) !important; }
+.hover\:bg-gray-100:hover               { background-color: var(--urushi) !important; }
+.hover\:bg-black:hover                  { background-color: var(--akabeni) !important; }
+.bg-black\/5                            { background-color: rgba(212, 175, 55, 0.05) !important; }
+.bg-black\/10                           { background-color: rgba(212, 175, 55, 0.08) !important; }
+.hover\:bg-black\/5:hover               { background-color: rgba(212, 175, 55, 0.08) !important; }
+.hover\:bg-black\/10:hover              { background-color: rgba(212, 175, 55, 0.12) !important; }
+
+/* Gradient stops that referenced white */
+[class*="from-white"]                   { --tw-gradient-from: var(--kokutan) !important; }
+[class*="to-white"]                     { --tw-gradient-to: var(--kokutan) !important; }
+[class*="via-white"]                    { --tw-gradient-via: var(--kokutan) !important; }
+
+/* Borders */
+.border-white                { border-color: var(--border) !important; }
+.border-gray-200             { border-color: var(--border) !important; }
+.border-gray-300             { border-color: var(--border) !important; }
+.hover\:border-gray-300:hover { border-color: var(--kinpaku) !important; }
+
+/* Text grays — make readable on dark */
+.text-gray-400               { color: var(--nezumi) !important; }
+.text-gray-500               { color: var(--nezumi) !important; }
+.text-gray-600               { color: var(--kinari) !important; }
+.text-gray-700               { color: var(--kinari) !important; }
+.text-gray-800               { color: var(--kinari) !important; }
+.text-gray-900               { color: var(--kinari) !important; }
+
+/* Specific bg-washi / bg-kinari-cream aliases */
+.bg-washi                    { background-color: var(--sumi) !important; }
+
+/* Toggle thumb — explicit light disc */
+.toggle-thumb                { background-color: var(--kinari) !important; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+.bg-gray-200                 { background-color: rgba(255,255,255,0.08) !important; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/*  BUSHIDŌ COMPONENT CLASSES                    */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Shoji-slide transitions (kept for compat) */
+.shoji-slide-enter        { opacity: 0; transform: translateX(12px); }
+.shoji-slide-enter-active { opacity: 1; transform: translateX(0); transition: opacity 350ms, transform 350ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.shoji-slide-exit         { opacity: 1; transform: translateX(0); }
+.shoji-slide-exit-active  { opacity: 0; transform: translateX(-12px); transition: opacity 250ms, transform 250ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+
+/* Washi → Lacquer panel */
 .washi-card {
-  @apply bg-card rounded-lg relative overflow-hidden;
-  box-shadow: var(--shadow);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(212,175,55,0.04);
   content-visibility: auto;
   contain-intrinsic-size: 1px 100px;
-  /* Approximate height to prevent scrollbar jumping */
 }
 
 .washi-card::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background-image: var(--noise-pattern);
-  background-size: 24px 24px;
-  opacity: 0.4;
+  opacity: 0.5;
   pointer-events: none;
   z-index: 0;
 }
 
-.washi-card>* {
+.washi-card > * { position: relative; z-index: 1; }
+
+/* Panel with kintsugi gold seam at top */
+.kintsugi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   position: relative;
-  z-index: 1;
+  box-shadow: var(--shadow);
+}
+.kintsugi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 12%; right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kinpaku) 50%, transparent);
+  opacity: 0.7;
 }
 
-/* Vertical Text (Tategaki) */
-.tategaki {
-  writing-mode: horizontal-tb;
-  /* Default fallback */
-}
+/* Tategaki vertical rail */
+.tategaki { writing-mode: horizontal-tb; }
 
 @media (min-width: 640px) {
   .tategaki-md {
     writing-mode: vertical-rl;
     text-orientation: upright;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.2em;
   }
 }
 
-/* Seasonal theme support */
-[data-season="spring"] {
-  --accent: #ffb7c5;
-  --accent2: #e090a0;
+/* Hanko seal — crimson square stamp */
+.hanko {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--akabeni);
+  color: var(--kinari);
+  font-family: var(--serif);
+  font-weight: 900;
+  padding: 0.18em 0.45em;
+  border-radius: 2px;
+  box-shadow: var(--seal-glow);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  letter-spacing: 0.05em;
+}
+.hanko.tilt { transform: rotate(-3deg); }
+
+/* Brushstroke divider */
+.brush-divider {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(212,175,55,0.0) 5%,
+    rgba(212,175,55,0.55) 30%,
+    rgba(212,175,55,0.8) 50%,
+    rgba(212,175,55,0.55) 70%,
+    rgba(212,175,55,0.0) 95%,
+    transparent 100%);
+  border: none;
+  margin: 0;
 }
 
-[data-season="summer"] {
-  --accent: #00a381;
-  --accent2: #008f6f;
+.brush-divider.thick { height: 2px; }
+
+/* Gold leaf text */
+.gold-leaf {
+  color: var(--kinpaku);
+  text-shadow: 0 0 14px rgba(212,175,55,0.4);
 }
 
-[data-season="autumn"] {
-  --accent: #d66a4c;
-  --accent2: #b85035;
+/* Sumi (ink) heading — serif, large, with brush bleed */
+.sumi-heading {
+  font-family: var(--serif);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: var(--kinari);
 }
 
-[data-season="winter"] {
-  --accent: #5a79a5;
-  --accent2: #436088;
+/* Kanji display — massive serif */
+.kanji-display {
+  font-family: var(--serif);
+  font-weight: 900;
+  color: var(--kinari);
+  text-shadow: 0 2px 0 rgba(0,0,0,0.5), 0 0 24px rgba(212,175,55,0.12);
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
+/* Seal stamp animation */
+.seal-press { animation: sealStamp 0.5s cubic-bezier(0.6,-0.2,0.3,1.4) both; }
+@keyframes sealStamp {
+  0%   { transform: scale(1.5) rotate(-8deg); opacity: 0; }
+  60%  { transform: scale(0.94) rotate(2deg); opacity: 1; }
+  80%  { transform: scale(1.04) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* Ink bleed reveal */
+.ink-bleed { animation: inkBleed 0.6s ease-out both; }
+@keyframes inkBleed {
+  0%   { filter: blur(8px); opacity: 0; transform: translateY(8px); }
+  40%  { filter: blur(2px); opacity: 0.7; }
+  100% { filter: blur(0); opacity: 1; transform: translateY(0); }
+}
+
+/* Gold shimmer text */
+.gold-shimmer {
+  background: linear-gradient(90deg, var(--kinpaku) 0%, #FFF1B8 50%, var(--kinpaku) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: goldShimmer 4s ease-in-out infinite;
+}
+@keyframes goldShimmer {
+  0%, 100% { background-position: -200% 0; }
+  50%      { background-position: 200% 0; }
+}
+
+/* Lantern flicker */
+.lantern { animation: lanternFlicker 4s ease-in-out infinite; }
+@keyframes lanternFlicker {
+  0%, 100% { opacity: 0.85; filter: brightness(1); }
+  45%      { opacity: 0.98; filter: brightness(1.2); }
+  48%      { opacity: 0.74; filter: brightness(0.85); }
+}
+
+/* Discipline meter — gold-fill bar */
+.discipline-meter {
   height: 6px;
+  background: rgba(212, 175, 55, 0.08);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+.discipline-meter > .fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--enji), var(--akabeni), var(--kinpaku));
+  border-radius: 1px;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+  transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+/* Vertical kanji sidebar — decorative */
+.kanji-rail {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: clamp(16px, 1.4vw, 22px);
+  letter-spacing: 0.6em;
+  color: var(--akabeni);
+  opacity: 0.4;
+  user-select: none;
+  pointer-events: none;
 }
 
+/* Torii silhouette border (top + sides) */
+.torii-frame {
+  position: relative;
+  padding-top: 16px;
+}
+.torii-frame::before,
+.torii-frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--akabeni) 0%, transparent 100%);
+}
+.torii-frame::before { left: 8%; }
+.torii-frame::after  { right: 8%; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--sumi); }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
+  background: linear-gradient(180deg, var(--akabeni), var(--enji));
+  border-radius: 2px;
 }
+::-webkit-scrollbar-thumb:hover { background: var(--akabeni); }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
+::selection { background: var(--akabeni); color: var(--kinari); }
 
-/* Breathing Animation Keyframes */
+/* Seasonal — adapted to dojo */
+[data-season="spring"] { --accent: #D45C72; --accent2: #B83E55; }   /* sakura crimson */
+[data-season="summer"] { --accent: #1F7A5B; --accent2: #155F46; }   /* bamboo */
+[data-season="autumn"] { --accent: #C44A1B; --accent2: #A03612; }   /* maple */
+[data-season="winter"] { --accent: #5A79A5; --accent2: #436088; }   /* steel */
+
+/* Legacy breathing animations — re-tuned to gold/crimson */
 @keyframes breathing-sun-rays {
-
-  0%,
-  100% {
-    transform: scale(0.9) rotate(0deg);
-    opacity: 0.2;
-  }
-
-  50% {
-    transform: scale(1.1) rotate(10deg);
-    opacity: 0.4;
-  }
+  0%, 100% { transform: scale(0.9) rotate(0deg); opacity: 0.15; }
+  50%      { transform: scale(1.12) rotate(10deg); opacity: 0.35; }
 }
-
 @keyframes breathing-outer-halo {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.4;
-  }
-
-  50% {
-    transform: scale(1.15);
-    opacity: 0.7;
-  }
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50%      { transform: scale(1.18); opacity: 0.6; }
 }
-
 @keyframes breathing-sun {
-
-  0%,
-  100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.05);
-  }
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
 }
-
 @keyframes breathing-inner-reflection {
-
-  0%,
-  100% {
-    opacity: 0.2;
-  }
-
-  50% {
-    opacity: 0.4;
-  }
+  0%, 100% { opacity: 0.18; }
+  50%      { opacity: 0.4; }
 }
 
-/* Animation Classes */
-.animate-breathing-rays {
-  animation: breathing-sun-rays 10s ease-in-out infinite;
-}
-
-.animate-breathing-halo {
-  animation: breathing-outer-halo 6s ease-in-out infinite;
-}
-
-.animate-breathing-sun {
-  animation: breathing-sun 6s ease-in-out infinite;
-  animation-delay: 0.1s;
-}
-
-.animate-breathing-reflection {
-  animation: breathing-inner-reflection 6s ease-in-out infinite;
-}
+.animate-breathing-rays       { animation: breathing-sun-rays 10s ease-in-out infinite; }
+.animate-breathing-halo       { animation: breathing-outer-halo 6s ease-in-out infinite; }
+.animate-breathing-sun        { animation: breathing-sun 6s ease-in-out infinite; animation-delay: 0.1s; }
+.animate-breathing-reflection { animation: breathing-inner-reflection 6s ease-in-out infinite; }

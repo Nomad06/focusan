@@ -9,10 +9,14 @@ import { messagingClient } from '../shared/messaging/client'
 import { normalizeHost } from '../shared/utils/domain'
 import { t, initI18n } from '../shared/i18n'
 import { SessionState, type FocusSession } from '../shared/domain/focus-sessions'
-import { SettingsIcon, SamuraiShieldIcon, XIcon } from '../shared/components/Icons'
+import { ZenSettingsIcon, ZenCloseIcon } from '../shared/components/Icons'
 import { playSound, SoundType } from '../shared/sound'
-import { ChallengeModal } from '../shared/components/ChallengeModal'
 import { StrictLockModal } from '../shared/components/StrictLockModal'
+import { ChallengeModal } from '../shared/components/ChallengeModal'
+import { ProtectionControl } from './components/ProtectionControl'
+import { SetupInstructions } from './components/SetupInstructions'
+import type { ProtectionMode } from '../shared/protection/types'
+import { useToast } from '../shared/components/Toast'
 
 // Animation variants
 const containerVariants = {
@@ -22,10 +26,10 @@ const containerVariants = {
     transition: {
       staggerChildren: 0.1,
       duration: 0.6,
-      ease: [0.22, 1, 0.36, 1] as const // Fix explicit type
-    }
+      ease: [0.22, 1, 0.36, 1] as const, // Fix explicit type
+    },
   },
-  exit: { opacity: 0 }
+  exit: { opacity: 0 },
 }
 
 const itemVariants = {
@@ -33,31 +37,85 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: "spring" as const, stiffness: 400, damping: 30 }
-  }
+    transition: { type: 'spring' as const, stiffness: 400, damping: 30 },
+  },
 }
 
 const breathingVariants = {
-  inhale: { scale: 1.05, opacity: 0.9, transition: { duration: 4, ease: "easeInOut" as const } },
-  exhale: { scale: 1, opacity: 0.7, transition: { duration: 4, ease: "easeInOut" as const } }
+  inhale: { scale: 1.05, opacity: 0.9, transition: { duration: 4, ease: 'easeInOut' as const } },
+  exhale: { scale: 1, opacity: 0.7, transition: { duration: 4, ease: 'easeInOut' as const } },
 }
 
 const App: React.FC = () => {
+  const toast = useToast()
   const [sitesCount, setSitesCount] = useState<number>(0)
   const [currentSession, setCurrentSession] = useState<FocusSession | null>(null)
   const [remainingTime, setRemainingTime] = useState<number>(0)
   const [showPomodoroModal, setShowPomodoroModal] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(true)
   const [currentHost, setCurrentHost] = useState<string>('')
+  const [currentHostBlocked, setCurrentHostBlocked] = useState<boolean>(false)
   const [breathState, setBreathState] = useState<'inhale' | 'exhale'>('inhale')
   const [showChallengeModal, setShowChallengeModal] = useState<boolean>(false)
   const [strictMode, setStrictMode] = useState<boolean>(false)
   const [challengeMode, setChallengeMode] = useState<boolean>(false)
+  const [requireDesktopApp, setRequireDesktopApp] = useState<boolean>(false)
 
   // Security State
+  const [protectionStatus, setProtectionStatus] = useState<
+    import('../shared/protection/types').ProtectionStatus | null
+  >(null)
+
   // Security State
   const [showStrictLockModal, setShowStrictLockModal] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+  const [isCheckingConnection, setIsCheckingConnection] = useState(false)
+
+  const handleSetProtectionMode = async (mode: ProtectionMode) => {
+    try {
+      const success = await messagingClient.setProtectionMode(mode)
+      if (success) {
+        await loadProtectionStatus()
+      }
+    } catch (err) {
+      console.error('[Popup] Error setting protection mode:', err)
+    }
+  }
+
+  const loadProtectionStatus = async () => {
+    try {
+      const status = await messagingClient.getProtectionStatus()
+      setProtectionStatus(status)
+    } catch (err) {
+      console.error('[Popup] Error loading protection status:', err)
+      // If error, assume disconnected
+      setProtectionStatus(prev => (prev ? { ...prev, desktopAppConnected: false } : null))
+    }
+  }
+
+  const handleCheckConnection = async () => {
+    setIsCheckingConnection(true)
+    try {
+      const connected = await messagingClient.checkConnection()
+      // If connected, reload full status
+      if (connected) {
+        await loadProtectionStatus()
+      } else {
+        // Explicitly set disconnected
+        setProtectionStatus(prev => (prev ? { ...prev, desktopAppConnected: false } : null))
+      }
+    } catch (err) {
+      console.error('[Popup] Connection check failed:', err)
+      setProtectionStatus(prev => (prev ? { ...prev, desktopAppConnected: false } : null))
+    } finally {
+      setIsCheckingConnection(false)
+    }
+  }
+
+  useEffect(() => {
+    const interval = setInterval(loadProtectionStatus, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Detect current host
   useEffect(() => {
@@ -73,7 +131,7 @@ const App: React.FC = () => {
   // Breathing cycle
   useEffect(() => {
     const interval = setInterval(() => {
-      setBreathState(prev => prev === 'inhale' ? 'exhale' : 'inhale')
+      setBreathState(prev => (prev === 'inhale' ? 'exhale' : 'inhale'))
     }, 4000)
     return () => clearInterval(interval)
   }, [])
@@ -83,11 +141,22 @@ const App: React.FC = () => {
     try {
       const sites = await messagingClient.getSites()
       setSitesCount(sites.length)
+      if (currentHost) {
+        setCurrentHostBlocked(sites.some(s => s.host === currentHost))
+      }
     } catch (err) {
       console.error('[Popup] Error loading sites count:', err)
       setSitesCount(0)
     }
   }
+
+  useEffect(() => {
+    if (!currentHost) return
+    messagingClient
+      .getSites()
+      .then(sites => setCurrentHostBlocked(sites.some(s => s.host === currentHost)))
+      .catch(() => {})
+  }, [currentHost])
 
   // Load current focus session
   const loadFocusSession = async () => {
@@ -119,16 +188,18 @@ const App: React.FC = () => {
       await initI18n()
       await loadSitesCount()
       await loadFocusSession()
+      await loadProtectionStatus() // Load initial status
 
       try {
         const { enabled } = await messagingClient.getStrictMode()
         setStrictMode(enabled)
         // setStrictModeStart(startTime) // Not available in contract yet
 
-
-
         const challenge = await messagingClient.getChallengeMode()
         setChallengeMode(challenge.enabled)
+
+        const requireDesktop = await messagingClient.getRequireDesktopApp()
+        setRequireDesktopApp(requireDesktop.enabled)
       } catch (err) {
         console.error('[Popup] Error loading status:', err)
       }
@@ -140,7 +211,11 @@ const App: React.FC = () => {
 
   // Timer for focus session
   useEffect(() => {
-    if (!currentSession || currentSession.state === SessionState.IDLE || currentSession.state === SessionState.PAUSED) {
+    if (
+      !currentSession ||
+      currentSession.state === SessionState.IDLE ||
+      currentSession.state === SessionState.PAUSED
+    ) {
       return
     }
 
@@ -164,10 +239,13 @@ const App: React.FC = () => {
 
       const success = await messagingClient.addSite(host)
       if (success) {
+        setCurrentHostBlocked(true)
         await loadSitesCount()
+        toast(`${host} ${t('common.added')}`, 'success')
       }
     } catch (err) {
       console.error('[Popup] Error adding current site:', err)
+      toast(t('errors.failedToAdd'), 'error')
     }
   }
 
@@ -248,8 +326,26 @@ const App: React.FC = () => {
     )
   }
 
+  // Render Setup Instructions if not connected (and not loading)
+  if (!loading && protectionStatus && !protectionStatus.desktopAppConnected && requireDesktopApp) {
+    return (
+      <div className="w-[340px] min-h-[520px] bg-washi flex flex-col font-sans overflow-hidden relative">
+        <SetupInstructions
+          onCheckConnection={handleCheckConnection}
+          isChecking={isCheckingConnection}
+        />
+      </div>
+    )
+  }
+
   return (
-    <div className="w-[340px] min-h-[520px] bg-washi flex flex-col p-5 font-sans overflow-hidden relative">
+    <div className="w-[340px] min-h-[520px] flex flex-col p-5 font-sans overflow-hidden relative" style={{ background: 'var(--sumi)' }}>
+      {/* Asanoha pattern overlay */}
+      <div className="absolute inset-0 pointer-events-none opacity-40" style={{ backgroundImage: 'var(--asanoha)' }} />
+      {/* Crimson radial glow */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(184,46,46,0.14) 0%, transparent 60%)' }} />
+      {/* Right kanji rail */}
+      <div className="hidden md:flex absolute right-2 top-8 bottom-8 kanji-rail" style={{ fontSize: 11, letterSpacing: '0.4em', opacity: 0.25 }}>武士道</div>
       <AnimatePresence mode="wait">
         {showPomodoroModal ? (
           <PomodoroModal
@@ -274,7 +370,6 @@ const App: React.FC = () => {
               setShowStrictLockModal(false)
             }}
           />
-
         ) : showChallengeModal ? (
           <div className="absolute inset-0 z-50">
             <ChallengeModal
@@ -296,92 +391,139 @@ const App: React.FC = () => {
             animate="visible"
             exit="exit"
           >
-            {/* Header */}
+            {/* Header — dojo banner */}
             <motion.header
-              className="flex justify-between items-center mb-8"
+              className="flex justify-between items-center mb-6 pb-4 border-b"
+              style={{ borderColor: 'var(--border)' }}
               variants={itemVariants}
             >
               <div className="flex items-center gap-3">
-                <img src="/zen-circle.png" alt="Focusan" className="w-8 h-8 drop-shadow-sm opacity-90 hover:opacity-100 transition-opacity" />
+                <div className="hanko tilt seal-press" style={{ fontSize: 14, padding: '4px 8px' }}>士</div>
                 <div className="flex flex-col">
-                  <span className="font-serif text-lg text-sumi-black tracking-wide leading-none">Focusan</span>
-                  <span className="text-[12px] font-serif tracking-[0.2em] text-accent mt-0.5">集中</span>
+                  <span className="font-serif text-lg tracking-wide leading-none" style={{ color: 'var(--kinari)' }}>
+                    Focusan
+                  </span>
+                  <span className="text-[10px] font-serif tracking-[0.45em] mt-1 uppercase" style={{ color: 'var(--kinpaku)' }}>
+                    武士道 · The Way
+                  </span>
                 </div>
               </div>
               <motion.button
-                whileHover={{ rotate: 45, scale: 1.1 }}
+                whileHover={{ rotate: 90, scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={handleOpenOptions}
-                className="text-sumi-gray hover:text-accent transition-colors p-2 rounded-full hover:bg-black/5"
+                className="transition-all p-2 rounded"
+                style={{ color: 'var(--nezumi)' }}
               >
-                <SettingsIcon />
+                <ZenSettingsIcon strokeWidth={1.5} />
               </motion.button>
             </motion.header>
 
             <main className="flex flex-col items-center gap-8 relative flex-1 justify-center">
-              {/* Timer Circle with Breathing Effect */}
+              {/* Timer — Dojo gong with kanji core */}
               <motion.div
                 className="relative w-[220px] h-[220px] flex items-center justify-center"
                 variants={itemVariants}
               >
-                {/* Breathing Glow Background */}
+                {/* Lantern glow */}
                 <motion.div
-                  className="absolute inset-0 rounded-full bg-accent/5 blur-2xl" // Increased blur for airier feel
+                  className="absolute inset-0 rounded-full blur-3xl"
+                  style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.18), transparent 70%)' }}
                   variants={breathingVariants}
                   animate={breathState}
                 />
 
-                {/* SVG Ring */}
-                <svg width="220" height="220" className="-rotate-90 drop-shadow-sm">
-                  {/* Track - Thinner and more transparent */}
-                  <circle cx="110" cy="110" r="95" stroke="rgba(46, 95, 111, 0.05)" strokeWidth="1" fill="transparent" />
+                {/* Faint background kanji 集 */}
+                <div
+                  className="absolute font-serif select-none pointer-events-none"
+                  style={{
+                    fontSize: 200,
+                    fontWeight: 900,
+                    color: 'var(--akabeni)',
+                    opacity: 0.06,
+                    lineHeight: 1,
+                  }}
+                >
+                  集
+                </div>
 
-                  {/* Progress - Thinner stroke */}
+                {/* SVG Ring — gold gradient */}
+                <svg width="220" height="220" className="-rotate-90 relative">
+                  <defs>
+                    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="var(--akabeni)" />
+                      <stop offset="50%" stopColor="var(--kinpaku)" />
+                      <stop offset="100%" stopColor="var(--enji)" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Outer decorative ring */}
+                  <circle cx="110" cy="110" r="105" stroke="var(--border)" strokeWidth="1" fill="transparent" strokeDasharray="2 4" />
+
+                  {/* Track */}
+                  <circle
+                    cx="110"
+                    cy="110"
+                    r="95"
+                    stroke="rgba(212,175,55,0.08)"
+                    strokeWidth="2"
+                    fill="transparent"
+                  />
+
+                  {/* Progress */}
                   <motion.circle
-                    cx="110" cy="110" r="95"
-                    stroke="var(--accent)"
-                    strokeWidth="1.5"
+                    cx="110"
+                    cy="110"
+                    r="95"
+                    stroke="url(#ringGradient)"
+                    strokeWidth="3"
                     fill="transparent"
                     strokeDasharray={2 * Math.PI * 95}
                     strokeLinecap="round"
                     animate={{
-                      strokeDashoffset: isSessionActive && currentSession
-                        ? (2 * Math.PI * 95) * (1 - (remainingTime / (currentSession.duration * 60)))
-                        : (2 * Math.PI * 95)
+                      strokeDashoffset:
+                        isSessionActive && currentSession
+                          ? 2 * Math.PI * 95 * (1 - remainingTime / (currentSession.duration * 60))
+                          : 2 * Math.PI * 95,
                     }}
-                    transition={{ duration: 1, ease: "linear" }}
-                    className="drop-shadow-sm" // Reduced shadow intensity
+                    transition={{ duration: 1, ease: 'linear' }}
+                    style={{ filter: 'drop-shadow(0 0 8px rgba(212,175,55,0.4))' }}
                   />
                 </svg>
 
-                {/* Center Text - Scaled down for more air */}
-                <div className="absolute flex flex-col items-center text-center z-10 transform scale-75">
+                {/* Center */}
+                <div className="absolute flex flex-col items-center text-center z-10">
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 0.5, y: 0 }}
-                    className="text-[10px] uppercase tracking-[0.3em] text-sumi-gray mb-2 font-serif"
+                    animate={{ opacity: 0.6, y: 0 }}
+                    className="text-[9px] uppercase tracking-[0.45em] font-serif mb-1"
+                    style={{ color: 'var(--kinpaku)' }}
                   >
-                    Total Immersion
+                    {isSessionActive ? '集中' : '修行'}
                   </motion.div>
 
                   <motion.span
-                    className="font-mono text-[3.5rem] font-light text-sumi-black leading-none tracking-tighter tabular-nums"
+                    className="font-mono text-[2.75rem] font-light leading-none tracking-tight tabular-nums"
+                    style={{ color: 'var(--kinari)', textShadow: '0 0 20px rgba(212,175,55,0.2)' }}
                   >
                     {isSessionActive ? formatTime(remainingTime) : '25:00'}
                   </motion.span>
 
                   <motion.div
-                    className="mt-3 flex flex-col items-center gap-1"
-                    animate={{ opacity: isSessionActive ? 1 : 0.6 }}
+                    className="mt-2 flex items-center gap-2"
+                    animate={{ opacity: isSessionActive ? 1 : 0.5 }}
                   >
-                    <span className="text-xs font-serif text-sumi-gray uppercase tracking-[0.2em]">
+                    <span className="text-[9px] font-serif uppercase tracking-[0.35em]" style={{ color: 'var(--nezumi)' }}>
                       {isSessionActive
-                        ? (currentSession?.state === SessionState.PAUSED ? t('focusSession.paused') : t('focusSession.active'))
+                        ? currentSession?.state === SessionState.PAUSED
+                          ? t('focusSession.paused')
+                          : t('focusSession.active')
                         : t('focusSession.ready')}
                     </span>
                     {isSessionActive && (
                       <motion.div
-                        className="w-1 h-1 rounded-full bg-accent"
+                        className="w-1 h-1 rounded-full"
+                        style={{ background: 'var(--kinpaku)' }}
                         animate={{ opacity: [0, 1, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       />
@@ -390,70 +532,88 @@ const App: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* Minimalist Controls */}
+              {/* Controls — engage */}
               <motion.div
-                className="flex items-center gap-4 w-full justify-center px-4"
+                className="flex items-center gap-3 w-full justify-center px-4"
                 variants={itemVariants}
               >
                 {isSessionActive ? (
                   <>
                     <motion.button
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileTap={{ scale: 0.97 }}
                       onClick={handlePauseFocusSession}
-                      className="btn secondary flex-1 shadow-sm font-serif"
+                      className="btn secondary flex-1"
                     >
-                      {currentSession?.state === SessionState.PAUSED ? 'Resume' : 'Pause'}
+                      {currentSession?.state === SessionState.PAUSED ? '▶ ' + t('focusSession.resume') : '❘❘ ' + t('focusSession.pause')}
                     </motion.button>
                     <motion.button
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileTap={{ scale: 0.97 }}
                       onClick={handleStopFocusSession}
-                      className="btn danger w-auto px-6 font-serif"
+                      className="btn danger px-5"
                     >
-                      Stop
+                      {t('focusSession.stop')}
                     </motion.button>
                   </>
                 ) : (
                   <motion.button
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={handleStartFocusSession}
-                    className="btn primary w-full py-3.5 text-lg shadow-lantern tracking-wide font-serif"
+                    className="btn primary w-full lg"
+                    style={{ paddingTop: 14, paddingBottom: 14 }}
                   >
-                    Start Focus
+                    <span className="font-serif" style={{ fontSize: 16, marginRight: 6 }}>戦</span>
+                    {t('bushido.engage')}
                   </motion.button>
                 )}
               </motion.div>
             </main>
 
-            {/* Footer / Status Card */}
-            <motion.div
-              className="mt-8 washi-card p-4 border border-border flex justify-between items-center"
-              variants={itemVariants}
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/5 text-accent border border-accent/20">
-                  <SamuraiShieldIcon size={16} />
+            {/* Current Gate — verdict card */}
+            {!isSessionActive && currentHost && (
+              <motion.div
+                className="mt-5 flex items-center gap-3 px-4 py-3 kintsugi-card"
+                variants={itemVariants}
+              >
+                {currentHostBlocked ? (
+                  <span className="hanko tilt" style={{ fontSize: 11, padding: '3px 6px' }}>封</span>
+                ) : (
+                  <span
+                    className="font-serif lantern"
+                    style={{ fontSize: 18, color: 'var(--kinpaku)', textShadow: 'var(--lantern-glow)' }}
+                  >
+                    門
+                  </span>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="text-[9px] uppercase tracking-[0.35em] leading-none mb-1" style={{ color: 'var(--nezumi)' }}>
+                    {currentHostBlocked ? t('bushido.gateSealed') : t('bushido.currentTab')}
+                  </div>
+                  <div className="font-mono text-xs truncate" style={{ color: currentHostBlocked ? 'var(--hi-iro)' : 'var(--kinari)' }}>
+                    {currentHost}
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[9px] text-sumi-gray uppercase tracking-wider font-semibold">Protected</span>
-                  <span className="text-sm font-semibold text-sumi-black font-mono">{sitesCount} Sites</span>
-                </div>
-              </div>
+                {!currentHostBlocked && (
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    onClick={handleAddCurrentSite}
+                    className="btn primary sm shrink-0 focus-ring"
+                    title={`Seal ${currentHost}`}
+                  >
+                    {t('bushido.seal')}
+                  </motion.button>
+                )}
+              </motion.div>
+            )}
 
-              {!isSessionActive && currentHost && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleAddCurrentSite}
-                  className="px-3 py-1.5 bg-white border border-border rounded text-xs hover:border-accent hover:text-accent transition-colors flex items-center gap-1 shadow-sm font-medium text-sumi-gray"
-                  title={`Block ${currentHost}`}
-                >
-                  <span className="font-bold text-lg leading-none mb-0.5">+</span> Block
-                </motion.button>
-              )}
-            </motion.div>
+            {/* Footer / Status Card */}
+            <div className="mt-4">
+              <ProtectionControl
+                status={protectionStatus}
+                sitesCount={sitesCount}
+                onSetMode={handleSetProtectionMode}
+                requireDesktopApp={requireDesktopApp}
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -474,7 +634,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
   const [loading, setLoading] = useState<boolean>(true)
   const [duration, setDuration] = useState<number>(25)
   const [mode, setMode] = useState<'blocklist' | 'whitelist'>('blocklist')
-
+  const toast = useToast()
 
   // Load sites
   useEffect(() => {
@@ -496,12 +656,12 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
     playSound(SoundType.KOTO_PLUCK)
     const host = normalizeHost(newSiteInput)
     if (!host) {
-      alert(t('errors.invalidDomain'))
+      toast(t('errors.invalidDomain'), 'error')
       return
     }
 
     if (additionalSites.includes(host)) {
-      alert(t('errors.siteAlreadyAdded'))
+      toast(t('errors.siteAlreadyAdded'), 'error')
       return
     }
 
@@ -548,12 +708,17 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
       className="flex flex-col h-full gap-4 relative z-10"
     >
       <div className="flex justify-between items-center">
-        <h2 className="font-serif font-medium text-xl text-sumi-black">{t('focusSession.selectSites')}</h2>
+        <h2 className="font-serif font-medium text-xl text-sumi-black">
+          {t('focusSession.selectSites')}
+        </h2>
         <button
           className="text-sumi-gray hover:text-sumi-black p-2 transition-transform hover:rotate-90 rounded-full hover:bg-black/5"
-          onClick={() => { playSound(SoundType.SOFT_GONG); onClose(); }}
+          onClick={() => {
+            playSound(SoundType.SOFT_GONG)
+            onClose()
+          }}
         >
-          <XIcon size={20} />
+          <ZenCloseIcon size={20} />
         </button>
       </div>
 
@@ -615,7 +780,9 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
             <div className="washi-card border border-border p-2 max-h-48 overflow-y-auto">
               {sites.length === 0 ? (
                 <div className="text-sumi-gray text-center p-4 text-xs italic">
-                  {mode === 'whitelist' ? 'Add sites you want to ALLOW access to.' : t('focusSession.noSites')}
+                  {mode === 'whitelist'
+                    ? 'Add sites you want to ALLOW access to.'
+                    : t('focusSession.noSites')}
                 </div>
               ) : (
                 <div className="flex flex-col gap-1">
@@ -630,7 +797,9 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
                         checked={selectedMainSites.has(site.host)}
                         onChange={() => handleToggleMainSite(site.host)}
                       />
-                      <span className="font-mono flex-1 text-xs text-sumi-black group-hover:text-accent transition-colors">{site.host}</span>
+                      <span className="font-mono flex-1 text-xs text-sumi-black group-hover:text-accent transition-colors">
+                        {site.host}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -652,10 +821,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
                 onKeyPress={e => e.key === 'Enter' && handleAddAdditionalSite()}
                 placeholder="example.com"
               />
-              <button
-                className="btn secondary text-xs px-4"
-                onClick={handleAddAdditionalSite}
-              >
+              <button className="btn secondary text-xs px-4" onClick={handleAddAdditionalSite}>
                 {t('common.add')}
               </button>
             </div>
@@ -674,7 +840,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
                       onClick={() => handleRemoveAdditionalSite(host)}
                       className="text-sumi-gray hover:text-danger w-4 h-4 flex items-center justify-center rounded-full hover:bg-danger/10"
                     >
-                      <XIcon size={12} />
+                      <ZenCloseIcon size={12} strokeWidth={2} />
                     </button>
                   </motion.div>
                 ))}
@@ -688,14 +854,14 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
       <div className="flex gap-3 mt-auto pt-4 border-t border-border">
         <button
           className="btn secondary w-1/3"
-          onClick={() => { playSound(SoundType.SOFT_GONG); onClose(); }}
+          onClick={() => {
+            playSound(SoundType.SOFT_GONG)
+            onClose()
+          }}
         >
           {t('common.cancel')}
         </button>
-        <button
-          className="btn primary flex-1 shadow-lantern"
-          onClick={handleStartSession}
-        >
+        <button className="btn primary flex-1 shadow-lantern" onClick={handleStartSession}>
           {t('focusSession.startSession')}
         </button>
       </div>

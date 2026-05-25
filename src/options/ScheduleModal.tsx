@@ -16,7 +16,12 @@ interface ScheduleModalProps {
   onCancel: () => void
 }
 
-const ScheduleModal: React.FC<ScheduleModalProps> = ({ host, initialSchedule, onSave, onCancel }) => {
+const ScheduleModal: React.FC<ScheduleModalProps> = ({
+  host,
+  initialSchedule,
+  onSave,
+  onCancel,
+}) => {
   const [mode, setMode] = useState<ScheduleMode>(initialSchedule?.mode || ScheduleMode.ALWAYS)
   const [workStart, setWorkStart] = useState(initialSchedule?.workHours?.start || '09:00')
   const [workEnd, setWorkEnd] = useState(initialSchedule?.workHours?.end || '18:00')
@@ -78,18 +83,21 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ host, initialSchedule, on
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onCancel}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={onCancel}
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.2 }}
-        className="w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden border border-border"
+        className="w-full max-w-lg bg-washi rounded-xl shadow-[var(--shadow-lg)] overflow-hidden border border-border/60"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-6 border-b border-border bg-gray-50/50">
-          <h2 className="text-xl font-semibold text-sumi-black">
+        <div className="p-6 border-b border-border/40 bg-white/50 backdrop-blur-sm">
+          <h2 className="text-2xl font-serif text-sumi-black tracking-tight">
             {t('schedule.modalTitle', { host })}
           </h2>
         </div>
@@ -100,7 +108,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ host, initialSchedule, on
           <ZenSelect
             label={t('schedule.scheduleMode')}
             value={mode}
-            onChange={(val) => setMode(val as ScheduleMode)}
+            onChange={val => setMode(val as ScheduleMode)}
             options={[
               { value: ScheduleMode.ALWAYS, label: t('schedule.alwaysBlock') },
               { value: ScheduleMode.WORK_HOURS, label: t('schedule.workHours') },
@@ -112,30 +120,26 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ host, initialSchedule, on
 
           {/* Work hours settings */}
           {mode === ScheduleMode.WORK_HOURS && (
-            <div className="bg-gray-50 p-4 rounded-lg border border-border mb-6">
-              <h3 className="text-sm font-medium mb-3 text-sumi-black">
+            <div className="bg-white/60 p-5 rounded-xl border border-border/50 mb-6 shadow-sm">
+              <h3 className="text-sm font-serif mb-4 text-sumi-black tracking-wide">
                 {t('schedule.workHoursLabel')}
               </h3>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <label className="block text-xs text-sumi-gray mb-1">
-                    {t('schedule.from')}
-                  </label>
+                  <label className="block text-xs font-serif tracking-widest text-sumi-gray mb-1.5 uppercase">{t('schedule.from')}</label>
                   <input
                     type="time"
-                    className="w-full px-3 py-2 rounded border border-border bg-white focus:border-accent outline-none"
+                    className="w-full px-4 py-2.5 rounded-lg border border-border/80 bg-white focus:border-accent outline-none shadow-inner font-mono text-sm transition-colors"
                     value={workStart}
                     onChange={e => setWorkStart(e.target.value)}
                   />
                 </div>
-                <div className="pt-5 text-sumi-gray">—</div>
+                <div className="pt-6 text-sumi-gray opacity-50">—</div>
                 <div className="flex-1">
-                  <label className="block text-xs text-sumi-gray mb-1">
-                    {t('schedule.to')}
-                  </label>
+                  <label className="block text-xs font-serif tracking-widest text-sumi-gray mb-1.5 uppercase">{t('schedule.to')}</label>
                   <input
                     type="time"
-                    className="w-full px-3 py-2 rounded border border-border bg-white focus:border-accent outline-none"
+                    className="w-full px-4 py-2.5 rounded-lg border border-border/80 bg-white focus:border-accent outline-none shadow-inner font-mono text-sm transition-colors"
                     value={workEnd}
                     onChange={e => setWorkEnd(e.target.value)}
                   />
@@ -146,18 +150,18 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ host, initialSchedule, on
 
           {/* Custom schedule settings */}
           {mode === ScheduleMode.CUSTOM && (
-            <div className="bg-gray-50 p-4 rounded-lg border border-border mb-6">
-              <h3 className="text-sm font-medium mb-3 text-sumi-black">
+            <div className="bg-white/60 p-5 rounded-xl border border-border/50 mb-6 shadow-sm">
+              <h3 className="text-sm font-serif mb-4 text-sumi-black tracking-wide">
                 {t('schedule.customDaysLabel')}
               </h3>
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mb-6">
                 {DAYS.map(day => (
                   <button
                     key={day.value}
                     type="button"
-                    className={`flex-1 min-w-[40px] py-2 px-1 text-xs rounded transition-colors ${customDays.has(day.value)
-                      ? 'bg-accent text-white shadow-sm'
-                      : 'bg-white border border-border text-sumi-gray hover:bg-gray-100'
+                    className={`flex-1 min-w-[40px] py-2.5 px-1 text-sm font-medium rounded-lg transition-all duration-200 ${customDays.has(day.value)
+                        ? 'bg-accent text-white shadow-md scale-105'
+                        : 'bg-white border border-border/80 text-sumi-gray hover:bg-black/5 hover:text-sumi-black'
                       }`}
                     onClick={() => toggleDay(day.value)}
                   >
@@ -165,29 +169,25 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ host, initialSchedule, on
                   </button>
                 ))}
               </div>
-              <h3 className="text-sm font-medium mb-3 text-sumi-black">
+              <h3 className="text-sm font-serif mb-4 text-sumi-black tracking-wide">
                 {t('schedule.customTimeLabel')}
               </h3>
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <label className="block text-xs text-sumi-gray mb-1">
-                    {t('schedule.from')}
-                  </label>
+                  <label className="block text-xs font-serif tracking-widest text-sumi-gray mb-1.5 uppercase">{t('schedule.from')}</label>
                   <input
                     type="time"
-                    className="w-full px-3 py-2 rounded border border-border bg-white focus:border-accent outline-none"
+                    className="w-full px-4 py-2.5 rounded-lg border border-border/80 bg-white focus:border-accent outline-none shadow-inner font-mono text-sm transition-colors"
                     value={customStart}
                     onChange={e => setCustomStart(e.target.value)}
                   />
                 </div>
-                <div className="pt-5 text-sumi-gray">—</div>
+                <div className="pt-6 text-sumi-gray opacity-50">—</div>
                 <div className="flex-1">
-                  <label className="block text-xs text-sumi-gray mb-1">
-                    {t('schedule.to')}
-                  </label>
+                  <label className="block text-xs font-serif tracking-widest text-sumi-gray mb-1.5 uppercase">{t('schedule.to')}</label>
                   <input
                     type="time"
-                    className="w-full px-3 py-2 rounded border border-border bg-white focus:border-accent outline-none"
+                    className="w-full px-4 py-2.5 rounded-lg border border-border/80 bg-white focus:border-accent outline-none shadow-inner font-mono text-sm transition-colors"
                     value={customEnd}
                     onChange={e => setCustomEnd(e.target.value)}
                   />
@@ -198,48 +198,48 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ host, initialSchedule, on
 
           {/* Info messages */}
           {mode === ScheduleMode.VACATION && (
-            <div className="bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-100 mb-6 text-sm">
+            <div className="bg-seiheki-blue/10 text-seiheki-blue p-4 rounded-xl border border-seiheki-blue/20 mb-6 text-sm leading-relaxed">
               {t('schedule.vacationDescription')}
             </div>
           )}
 
           {mode === ScheduleMode.WEEKENDS && (
-            <div className="bg-gray-50 text-sumi-gray p-4 rounded-lg border border-border mb-6 text-sm">
+            <div className="bg-black/5 text-sumi-gray p-4 rounded-xl border border-border/50 mb-6 text-sm leading-relaxed">
               {t('schedule.weekendsDescription')}
             </div>
           )}
 
           {mode === ScheduleMode.WORK_HOURS && (
-            <div className="bg-gray-50 text-sumi-gray p-4 rounded-lg border border-border mb-6 text-sm">
+            <div className="bg-black/5 text-sumi-gray p-4 rounded-xl border border-border/50 mb-6 text-sm leading-relaxed">
               {t('schedule.workHoursDescription', { start: workStart, end: workEnd })}
             </div>
           )}
 
           {mode === ScheduleMode.CUSTOM && (
-            <div className="bg-gray-50 text-sumi-gray p-4 rounded-lg border border-border mb-6 text-sm">
+            <div className="bg-black/5 text-sumi-gray p-4 rounded-xl border border-border/50 mb-6 text-sm leading-relaxed">
               {t('schedule.customDescription', { start: customStart, end: customEnd })}
             </div>
           )}
         </div>
 
         {/* Action buttons */}
-        <div className="p-6 border-t border-border bg-gray-50/50 flex gap-3">
+        <div className="p-6 border-t border-border/40 bg-white/50 backdrop-blur-sm flex gap-4">
           <button
-            className="flex-1 px-4 py-2 rounded-lg border border-border bg-white text-sumi-gray hover:bg-gray-50 transition-colors"
+            className="flex-1 px-6 py-3 rounded-lg border border-border/80 bg-white text-sumi-black hover:bg-black/5 hover:border-sumi-gray transition-all shadow-sm font-medium"
             onClick={onCancel}
           >
             {t('common.cancel')}
           </button>
           {initialSchedule && (
             <button
-              className="flex-1 px-4 py-2 rounded-lg border border-danger text-danger hover:bg-danger hover:text-white transition-colors"
+              className="flex-1 px-6 py-3 rounded-lg border border-danger/40 text-danger bg-danger/5 hover:bg-danger hover:text-white transition-all shadow-sm font-medium"
               onClick={handleRemoveSchedule}
             >
               {t('schedule.removeSchedule')}
             </button>
           )}
           <button
-            className="flex-1 px-4 py-2 rounded-lg bg-accent text-white hover:bg-opacity-90 transition-colors shadow-sm"
+            className="flex-1 px-6 py-3 rounded-lg bg-accent text-white hover:bg-accent2 transition-all shadow-md font-medium"
             onClick={handleSave}
           >
             {t('common.save')}
