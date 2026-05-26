@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, Unlock } from 'lucide-react'
 import { t } from '../i18n'
+import { useEscapeKey } from '../hooks/useEscapeKey'
 
 interface ChallengeModalProps {
   isOpen: boolean
@@ -30,6 +31,8 @@ export const ChallengeModal: React.FC<ChallengeModalProps> = ({
   const [input, setInput] = useState('')
   const [error, setError] = useState(false)
   const [mathProblem, setMathProblem] = useState({ q: '', a: 0 })
+
+  useEscapeKey(isOpen, onClose)
 
   useEffect(() => {
     if (isOpen) {
@@ -108,13 +111,19 @@ export const ChallengeModal: React.FC<ChallengeModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="challenge-modal-title"
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/70 backdrop-blur-md"
             onClick={onClose}
+            aria-label="Close"
           />
 
           <motion.div
@@ -130,7 +139,7 @@ export const ChallengeModal: React.FC<ChallengeModalProps> = ({
               <div className="mx-auto w-14 h-14 bg-white shadow-sm border border-danger/20 rounded-2xl flex items-center justify-center mb-5 relative z-10">
                 <AlertTriangle className="text-danger w-7 h-7" strokeWidth={1.5} />
               </div>
-              <h3 className="text-2xl font-serif text-sumi-black mb-2 tracking-tight relative z-10">{getTitle()}</h3>
+              <h3 id="challenge-modal-title" className="text-2xl font-serif text-sumi-black mb-2 tracking-tight relative z-10">{getTitle()}</h3>
               <p className="text-sumi-gray text-sm leading-relaxed font-light relative z-10">{getDescription()}</p>
             </div>
 

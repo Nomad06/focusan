@@ -18,7 +18,10 @@ export const ConditionalRuleSchema = z.object({
   type: z.nativeEnum(ConditionType),
   enabled: z.boolean(),
   maxVisits: z.number().min(1).optional(), // For VISITS_PER_DAY
-  timeAfter: z.string().regex(/^\d{2}:\d{2}$/).optional(), // For TIME_AFTER (HH:MM)
+  timeAfter: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .optional(), // For TIME_AFTER (HH:MM)
   days: z.array(z.number().min(0).max(6)).optional(), // For DAYS_OF_WEEK (0-6)
   maxTimeMinutes: z.number().min(1).optional(), // For TIME_LIMIT
 })
@@ -65,7 +68,8 @@ export function shouldBlockByConditionalRules(
   const now = new Date()
   const today = now.toISOString().split('T')[0]
 
-  // Check each rule
+  // Evaluate every enabled rule. Block if ANY rule's limit is exceeded.
+  // Rules with missing config are ignored.
   for (const rule of site.conditionalRules) {
     if (!rule.type || !rule.enabled) {
       continue
@@ -73,42 +77,24 @@ export function shouldBlockByConditionalRules(
 
     switch (rule.type) {
       case ConditionType.VISITS_PER_DAY: {
-        // Block after N visits per day
-        if (!rule.maxVisits) {
-          break
-        }
-
-        // Get today's visit count (0 if no stats)
+        if (!rule.maxVisits) break
         const visitsToday =
           siteStats && siteStats.visitsByDate && siteStats.visitsByDate[today]
             ? siteStats.visitsByDate[today]
             : 0
-
-        if (visitsToday >= rule.maxVisits) {
-          return true // Visit limit exceeded
-        }
-
-        // If visits are below limit, don't block
-        // (but this rule takes precedence - return false immediately)
-        return false
+        if (visitsToday >= rule.maxVisits) return true
+        break
       }
 
       case ConditionType.TIME_LIMIT: {
-        // Block when time limit is exceeded
-        if (!rule.maxTimeMinutes) {
-          break
-        }
+        if (!rule.maxTimeMinutes) break
         const timeSpentToday = siteStats && siteStats.timeSpentToday ? siteStats.timeSpentToday : 0
-        if (timeSpentToday >= rule.maxTimeMinutes) {
-          return true // Time limit exceeded
-        }
-        // If time not exceeded, don't block
-        return false
+        if (timeSpentToday >= rule.maxTimeMinutes) return true
+        break
       }
     }
   }
 
-  // If no rule matched, DON'T block (conditional rules don't require blocking)
   return false
 }
 
@@ -140,9 +126,7 @@ export function createDefaultRule(type: ConditionType): ConditionalRule {
  * @param rule - Rule to validate
  * @returns Validation result with error message if invalid
  */
-export function validateConditionalRule(
-  rule: unknown
-): { valid: boolean; error?: string } {
+export function validateConditionalRule(rule: unknown): { valid: boolean; error?: string } {
   const result = ConditionalRuleSchema.safeParse(rule)
   if (!result.success) {
     return {
@@ -202,14 +186,14 @@ export function getConditionTypes(): Array<{
   return [
     {
       type: ConditionType.VISITS_PER_DAY,
-      name: t("conditionalRules.visitsLimit"),
-      description: t("conditionalRules.visitsLimitDesc"),
+      name: t('conditionalRules.visitsLimit'),
+      description: t('conditionalRules.visitsLimitDesc'),
       icon: '🔢',
     },
     {
       type: ConditionType.TIME_LIMIT,
-      name: t("conditionalRules.timeLimit"),
-      description: t("conditionalRules.timeLimitDesc"),
+      name: t('conditionalRules.timeLimit'),
+      description: t('conditionalRules.timeLimitDesc'),
       icon: '⏱️',
     },
   ]

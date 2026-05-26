@@ -137,7 +137,9 @@ async function migrateV0toV1(): Promise<void> {
 
   // Convert string array to object array
   const migratedSites = sites.map(host => ({
-    host: String(host).toLowerCase().replace(/^www\./, ''),
+    host: String(host)
+      .toLowerCase()
+      .replace(/^www\./, ''),
     addedAt: Date.now(),
     category: null,
     schedule: null,
@@ -201,7 +203,14 @@ async function migrateV2toV3(): Promise<void> {
   // Convert any legacy strings to objects first
   const sitesAsObjects: SiteObject[] = sites.map(site =>
     typeof site === 'string'
-      ? { host: site, addedAt: Date.now(), category: null, schedule: null, conditionalRules: [], patternType: 'domain' }
+      ? {
+          host: site,
+          addedAt: Date.now(),
+          category: null,
+          schedule: null,
+          conditionalRules: [],
+          patternType: 'domain',
+        }
       : { ...site, patternType: (site as any).patternType || 'domain' }
   )
 

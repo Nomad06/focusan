@@ -143,52 +143,23 @@ export async function recordBlock(host: string): Promise<Stats | null> {
     }
     stats.byDate[today] += 1
 
-    // Update streak (consecutive days WITHOUT blocks)
-    // Streak increases only if today is the first block of the day
-    // and yesterday had no blocks (or it's the first day)
-    const todayBlocks = stats.byDate[today] || 0
-
-    if (todayBlocks === 1) {
-      // This is the first block today, check streak
+    // Streak tracking: counts consecutive days that contain at least one block.
+    // We persist the date of the last counted day to detect first-block-of-day
+    // safely (regardless of how many blocks already occurred today).
+    type StatsWithStreak = Stats & { streakLastDay?: string | null }
+    const streakStats = stats as StatsWithStreak
+    if (streakStats.streakLastDay !== today) {
       const yesterday = new Date()
-      yesterday.setDate(yesterday.getDate() - 1)
+      yesterday.setUTCDate(yesterday.getUTCDate() - 1)
       const yesterdayStr = yesterday.toISOString().split('T')[0]
 
-      const yesterdayBlocks = stats.byDate[yesterdayStr] || 0
-
-      if (yesterdayBlocks === 0) {
-        // No blocks yesterday - continue or start streak
-        if (stats.streakDays === null || stats.streakDays === undefined) {
-          stats.streakDays = 1 // First day of streak
-        } else {
-          // Check that the previous day was consecutive
-          const lastBlockDate = stats.lastBlockDate ? new Date(stats.lastBlockDate) : null
-          if (lastBlockDate) {
-            const lastBlockDateStr = lastBlockDate.toISOString().split('T')[0]
-            const daysDiff = Math.floor(
-              (new Date(today).getTime() - new Date(lastBlockDateStr).getTime()) /
-              (1000 * 60 * 60 * 24)
-            )
-
-            if (daysDiff === 1) {
-              // Consecutive day - increase streak
-              stats.streakDays = (stats.streakDays || 0) + 1
-            } else if (daysDiff > 1) {
-              // Skipped days - reset streak
-              stats.streakDays = 1 // Start new streak from today
-            }
-            // If daysDiff === 0, it's the same day - streak doesn't change
-          } else {
-            // No previous block date - start streak
-            stats.streakDays = 1
-          }
-        }
+      if (streakStats.streakLastDay === yesterdayStr) {
+        stats.streakDays = (stats.streakDays || 0) + 1
       } else {
-        // There were blocks yesterday - reset streak
-        stats.streakDays = 0
+        stats.streakDays = 1
       }
+      streakStats.streakLastDay = today
     }
-    // If this is not the first block today, streak doesn't change
 
     await browser.storage.local.set({ [STORAGE_KEYS.BLOCK_STATS]: stats })
 

@@ -7,7 +7,7 @@ import prettier from 'eslint-config-prettier'
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', '.eslintrc.json'],
+    ignores: ['dist/**', 'node_modules/**', '.eslintrc.json', 'desktop-app/src-tauri/**'],
   },
   {
     files: ['**/*.{ts,tsx}'],
@@ -30,9 +30,20 @@ export default [
         Blob: 'readonly',
         File: 'readonly',
         HTMLInputElement: 'readonly',
+        HTMLCanvasElement: 'readonly',
+        HTMLDivElement: 'readonly',
         localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        fetch: 'readonly',
+        AudioContext: 'readonly',
+        OscillatorNode: 'readonly',
+        GainNode: 'readonly',
+        process: 'readonly',
+        global: 'readonly',
         // Chrome extension API
         chrome: 'readonly',
         // Node.js globals for config files
@@ -56,7 +67,7 @@ export default [
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-non-null-assertion': 'warn',
-      'no-console': 'off', // Allow console for development
+      'no-console': ['warn', { allow: ['warn', 'error', 'debug'] }],
       'prefer-const': 'warn',
       'no-var': 'error',
       eqeqeq: ['warn', 'always'],

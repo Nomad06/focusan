@@ -22,10 +22,8 @@ import {
   exportAllData,
   importAllData,
   setOnboardingSeen,
-  getStrictMode,
   getChallengeMode,
   setChallengeMode,
-  setStrictMode,
 } from '../shared/storage/storage'
 import { rebuildRules } from './dnr-manager'
 import { recordVisitAttempt, recordBlock, getStats, clearStats } from '../shared/domain/stats'
@@ -38,6 +36,7 @@ import {
 } from '../shared/domain/focus-sessions'
 import { checkAchievements, getAchievements } from '../shared/domain/achievements'
 import { runMigrations, getMigrationVersion, needsMigration } from '../shared/storage/migrations'
+import { SiteObjectSchema } from '../shared/storage/schemas'
 
 /**
  * Handle incoming messages from UI components
@@ -152,19 +151,11 @@ export async function handleMessage(message: Message): Promise<unknown> {
       case MessageType.SET_ONBOARDING_SEEN:
         return await handleSetOnboardingSeen(message.seen)
 
-      case MessageType.GET_STRICT_MODE:
-        return await handleGetStrictMode()
-
-      case MessageType.SET_STRICT_MODE:
-        return await handleSetStrictMode(message.enabled)
-
       case MessageType.GET_CHALLENGE_MODE:
         return await handleGetChallengeMode()
 
       case MessageType.SET_CHALLENGE_MODE:
         return await handleSetChallengeMode(message.enabled)
-
-
 
       default:
         console.error('[Handlers] Unknown message type:', message)
@@ -218,15 +209,21 @@ async function handleRemoveSite(host: string): Promise<MessageResponse<MessageTy
   return createSuccessResponse()
 }
 
+// Partial schema for site updates: host/addedAt are immutable, rest optional.
+const SiteUpdateSchema = SiteObjectSchema.omit({ host: true, addedAt: true }).partial()
+
 async function handleUpdateSite(
   host: string,
   updates: unknown
 ): Promise<MessageResponse<MessageType.UPDATE_SITE>> {
-  await storageUpdateSite(host, updates as Record<string, unknown>)
-
-  // Rebuild DNR rules to apply updates
+  const parsed = SiteUpdateSchema.safeParse(updates)
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid site updates: ${parsed.error.issues[0]?.message ?? 'validation failed'}`
+    )
+  }
+  await storageUpdateSite(host, parsed.data)
   await rebuildRules()
-
   return createSuccessResponse()
 }
 
@@ -248,9 +245,7 @@ async function handleStartFocusSession(
   return createSuccessResponse()
 }
 
-async function handleStopFocusSession(): Promise<
-  MessageResponse<MessageType.STOP_FOCUS_SESSION>
-> {
+async function handleStopFocusSession(): Promise<MessageResponse<MessageType.STOP_FOCUS_SESSION>> {
   await stopFocusSession()
 
   // Rebuild DNR rules to remove focus session
@@ -304,14 +299,14 @@ async function handleRemoveTempWhitelist(
   return createSuccessResponse()
 }
 
-async function handleGetTempWhitelist(): Promise<
-  MessageResponse<MessageType.GET_TEMP_WHITELIST>
-> {
+async function handleGetTempWhitelist(): Promise<MessageResponse<MessageType.GET_TEMP_WHITELIST>> {
   const whitelist = await getTempWhitelist()
   return { whitelist }
 }
 
-async function handleRecordVisitAttempt(host: string): Promise<MessageResponse<MessageType.RECORD_VISIT_ATTEMPT>> {
+async function handleRecordVisitAttempt(
+  host: string
+): Promise<MessageResponse<MessageType.RECORD_VISIT_ATTEMPT>> {
   await recordVisitAttempt(host)
   return createSuccessResponse()
 }
@@ -397,18 +392,10 @@ async function handleRunMigrations(): Promise<MessageResponse<MessageType.RUN_MI
   return { result }
 }
 
-async function handleSetOnboardingSeen(seen: boolean): Promise<MessageResponse<MessageType.SET_ONBOARDING_SEEN>> {
+async function handleSetOnboardingSeen(
+  seen: boolean
+): Promise<MessageResponse<MessageType.SET_ONBOARDING_SEEN>> {
   await setOnboardingSeen(seen)
-  return createSuccessResponse()
-}
-
-async function handleGetStrictMode(): Promise<MessageResponse<MessageType.GET_STRICT_MODE>> {
-  const { enabled, startTime } = await getStrictMode()
-  return { enabled, startTime }
-}
-
-async function handleSetStrictMode(enabled: boolean): Promise<MessageResponse<MessageType.SET_STRICT_MODE>> {
-  await setStrictMode(enabled)
   return createSuccessResponse()
 }
 
@@ -417,12 +404,12 @@ async function handleGetChallengeMode(): Promise<MessageResponse<MessageType.GET
   return { enabled }
 }
 
-async function handleSetChallengeMode(enabled: boolean): Promise<MessageResponse<MessageType.SET_CHALLENGE_MODE>> {
+async function handleSetChallengeMode(
+  enabled: boolean
+): Promise<MessageResponse<MessageType.SET_CHALLENGE_MODE>> {
   await setChallengeMode(enabled)
   return createSuccessResponse()
 }
-
-
 
 /**
  * Initialize message listener

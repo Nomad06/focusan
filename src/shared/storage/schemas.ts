@@ -58,10 +58,7 @@ export const ExtensionStorageSchema = z.object({
   blockedSites: SitesArraySchema.optional(),
   i18n_language: z.string().optional(),
   siteCategories: z.array(z.string()).optional(),
-  strictMode: z.boolean().optional(),
-  strictModeStart: z.number().optional(),
   challengeMode: z.boolean().optional(),
-
 
   // Local storage
   blockStats: StatsSchema.optional(),
@@ -150,11 +147,7 @@ export function validateStorageData<T>(data: unknown, schema: z.ZodSchema<T>): T
  * @param defaultValue - Default value if validation fails
  * @returns Validated data or default
  */
-export function safeParseStorageData<T>(
-  data: unknown,
-  schema: z.ZodSchema<T>,
-  defaultValue: T
-): T {
+export function safeParseStorageData<T>(data: unknown, schema: z.ZodSchema<T>, defaultValue: T): T {
   try {
     return validateStorageData(data, schema)
   } catch (err) {

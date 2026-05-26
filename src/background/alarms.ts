@@ -4,7 +4,12 @@
  */
 
 import browser from 'webextension-polyfill'
-import { getCurrentSession, stopFocusSession, SessionState, ALARM_SESSION_NAME } from '../shared/domain/focus-sessions'
+import {
+  getCurrentSession,
+  stopFocusSession,
+  SessionState,
+  ALARM_SESSION_NAME,
+} from '../shared/domain/focus-sessions'
 import { cleanupExpiredWhitelist, getSites } from '../shared/storage/storage'
 import { rebuildRules } from './dnr-manager'
 import { normalizeHost } from '../shared/utils/domain'
@@ -164,20 +169,17 @@ async function handleTimeTracking(): Promise<void> {
  */
 export async function setupPeriodicAlarms(): Promise<void> {
   try {
-    // Check schedules every 5 minutes
-    await browser.alarms.create(ALARM_NAMES.SCHEDULE_CHECK, {
-      periodInMinutes: 5,
-    })
+    // Clear existing periodic alarms first so callers (install + startup) stay idempotent
+    // and we never leave behind stale alarms with mismatched periods.
+    await Promise.all([
+      browser.alarms.clear(ALARM_NAMES.SCHEDULE_CHECK),
+      browser.alarms.clear(ALARM_NAMES.WHITELIST_CLEANUP),
+      browser.alarms.clear(ALARM_NAMES.TIME_TRACKING),
+    ])
 
-    // Cleanup whitelist every 15 minutes
-    await browser.alarms.create(ALARM_NAMES.WHITELIST_CLEANUP, {
-      periodInMinutes: 15,
-    })
-
-    // Track time spent every 1 minute (for TIME_LIMIT conditional rules)
-    await browser.alarms.create(ALARM_NAMES.TIME_TRACKING, {
-      periodInMinutes: 1,
-    })
+    await browser.alarms.create(ALARM_NAMES.SCHEDULE_CHECK, { periodInMinutes: 5 })
+    await browser.alarms.create(ALARM_NAMES.WHITELIST_CLEANUP, { periodInMinutes: 15 })
+    await browser.alarms.create(ALARM_NAMES.TIME_TRACKING, { periodInMinutes: 1 })
 
     console.log('[Alarms] Periodic alarms set up')
   } catch (err) {

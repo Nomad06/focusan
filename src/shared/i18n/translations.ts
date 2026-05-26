@@ -353,7 +353,7 @@ export const translations = {
       verdictBlocked: 'Путь закрыт',
       returnToWork: 'Вернуться к делу',
       breathThree: 'Сделай три вдоха',
-      bowOut: 'Поклон. Закрыть.',
+      bowOut: 'Закрыть.',
       welcome: {
         intro: 'Входи. Здесь куётся воля.',
         philosophy: 'Семь добродетелей бусидо — твой компас.',
@@ -718,7 +718,7 @@ export const translations = {
       verdictBlocked: 'The Way is closed',
       returnToWork: 'Return to the work',
       breathThree: 'Three breaths.',
-      bowOut: 'Bow out. Close.',
+      bowOut: 'Close.',
       welcome: {
         intro: 'Enter. Will is forged here.',
         philosophy: 'The seven virtues of bushidō are your compass.',

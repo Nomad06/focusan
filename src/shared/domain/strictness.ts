@@ -147,7 +147,7 @@ export function calculateRulesStrictness(rules: ConditionalRule[] | null | undef
         const maxVisits = rule.maxVisits ?? 10
         // Lower visit limit = higher strictness
         // Score formula: 1000 - (visits × 100), clamped to 0 minimum
-        const score = Math.max(0, 1000 - (maxVisits * 100))
+        const score = Math.max(0, 1000 - maxVisits * 100)
         totalScore += score
         break
       }
@@ -156,7 +156,7 @@ export function calculateRulesStrictness(rules: ConditionalRule[] | null | undef
         const maxTimeMinutes = rule.maxTimeMinutes ?? 200
         // Lower time limit = higher strictness
         // Score formula: 2000 - (minutes × 10), clamped to 0 minimum
-        const score = Math.max(0, 2000 - (maxTimeMinutes * 10))
+        const score = Math.max(0, 2000 - maxTimeMinutes * 10)
         totalScore += score
         break
       }
@@ -198,7 +198,7 @@ export function calculateCombinedStrictness(
 
   // For now, we use schedule as primary strictness measure
   // Rules are secondary (they apply within the scheduled blocking time)
-  return scheduleScore + (rulesScore * 0.1) // Rules contribute 10% weight
+  return scheduleScore + rulesScore * 0.1 // Rules contribute 10% weight
 }
 
 /**
@@ -210,10 +210,7 @@ export function calculateCombinedStrictness(
  */
 export type StrictnessComparison = 'stricter' | 'same' | 'less-strict'
 
-export function compareStrictness(
-  oldScore: number,
-  newScore: number
-): StrictnessComparison {
+export function compareStrictness(oldScore: number, newScore: number): StrictnessComparison {
   // Add 5% tolerance to avoid triggering challenge on negligible changes
   const tolerance = oldScore * 0.05
 

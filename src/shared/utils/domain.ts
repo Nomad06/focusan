@@ -51,7 +51,10 @@ export function normalizeHost(input: string | null | undefined): string | null {
       }
 
       // If it's not a URL and not an IP, try as domain
-      const domainOnly = trimmed.toLowerCase().replace(/^www\./, '')
+      const domainOnly = trimmed
+        .toLowerCase()
+        .replace(/^www\./, '')
+        .replace(/\.+$/, '')
 
       // Domain validation: check for invalid characters
       // Allowed: letters, numbers, dots, hyphens (but not at start/end)
@@ -77,8 +80,8 @@ export function normalizeHost(input: string | null | undefined): string | null {
     // If hostname contains punycode (xn--), leave as is
     // Browser will handle IDN when parsing URL
 
-    // Remove www. prefix
-    host = host.replace(/^www\./, '')
+    // Remove www. prefix and any trailing dot
+    host = host.replace(/^www\./, '').replace(/\.+$/, '')
 
     // Check for empty host
     if (!host) return null

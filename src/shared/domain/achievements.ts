@@ -13,22 +13,22 @@ import { t } from '../i18n'
 // Achievement types enum - Japanese-inspired badges
 export enum AchievementType {
   // Streak achievements (継続 - Keizoku)
-  STREAK_7 = 'streak_7',           // Mt. Fuji Badge
-  STREAK_30 = 'streak_30',          // Sakura Badge
-  STREAK_100 = 'streak_100',        // Rising Sun Badge
+  STREAK_7 = 'streak_7', // Mt. Fuji Badge
+  STREAK_30 = 'streak_30', // Sakura Badge
+  STREAK_100 = 'streak_100', // Rising Sun Badge
 
   // Block count achievements (実績 - Jisseki)
-  TOTAL_BLOCKS_100 = 'total_blocks_100',   // Bamboo Badge
-  TOTAL_BLOCKS_500 = 'total_blocks_500',   // Katana Badge
+  TOTAL_BLOCKS_100 = 'total_blocks_100', // Bamboo Badge
+  TOTAL_BLOCKS_500 = 'total_blocks_500', // Katana Badge
   TOTAL_BLOCKS_1000 = 'total_blocks_1000', // Dragon Badge
 
   // Site management achievements (管理 - Kanri)
-  SITES_BLOCKED_10 = 'sites_blocked_10',   // Koi Badge
-  SITES_BLOCKED_50 = 'sites_blocked_50',   // Crane Badge
+  SITES_BLOCKED_10 = 'sites_blocked_10', // Koi Badge
+  SITES_BLOCKED_50 = 'sites_blocked_50', // Crane Badge
   SITES_BLOCKED_100 = 'sites_blocked_100', // Phoenix Badge
 
   // Perfect week achievement (完璧 - Kanpeki)
-  WEEK_NO_BLOCK = 'week_no_block',         // Zen Master Badge
+  WEEK_NO_BLOCK = 'week_no_block', // Zen Master Badge
 }
 
 // Achievement definition interface
@@ -51,61 +51,61 @@ export function getLocalizedAchievement(type: AchievementType): AchievementDefin
       id: AchievementType.STREAK_7,
       name: t('achievements.streak7Name'),
       description: t('achievements.streak7Desc'),
-      icon: '🗻', // Mt. Fuji - 7 day streak
+      icon: '⚪', // White Belt
     },
     [AchievementType.STREAK_30]: {
       id: AchievementType.STREAK_30,
       name: t('achievements.streak30Name'),
       description: t('achievements.streak30Desc'),
-      icon: '🌸', // Sakura - 30 day streak (perfect month)
+      icon: '🟡', // Yellow Belt
     },
     [AchievementType.STREAK_100]: {
       id: AchievementType.STREAK_100,
       name: t('achievements.streak100Name'),
       description: t('achievements.streak100Desc'),
-      icon: '🎌', // Rising Sun - 100 day streak
+      icon: '🟠', // Orange Belt
     },
     [AchievementType.TOTAL_BLOCKS_100]: {
       id: AchievementType.TOTAL_BLOCKS_100,
       name: t('achievements.totalBlocks100Name'),
       description: t('achievements.totalBlocks100Desc'),
-      icon: '🎋', // Bamboo - 100 blocks
+      icon: '🟢', // Green Belt
     },
     [AchievementType.TOTAL_BLOCKS_500]: {
       id: AchievementType.TOTAL_BLOCKS_500,
       name: t('achievements.totalBlocks500Name'),
       description: t('achievements.totalBlocks500Desc'),
-      icon: '⚔️', // Katana - 500 blocks
+      icon: '🔵', // Blue Belt
     },
     [AchievementType.TOTAL_BLOCKS_1000]: {
       id: AchievementType.TOTAL_BLOCKS_1000,
       name: t('achievements.totalBlocks1000Name'),
       description: t('achievements.totalBlocks1000Desc'),
-      icon: '🐉', // Dragon - 1000 blocks
+      icon: '🟣', // Purple Belt
     },
     [AchievementType.SITES_BLOCKED_10]: {
       id: AchievementType.SITES_BLOCKED_10,
       name: t('achievements.sitesBlocked10Name'),
       description: t('achievements.sitesBlocked10Desc'),
-      icon: '🐟', // Koi fish - 10 sites
+      icon: '🟤', // Brown Belt
     },
     [AchievementType.SITES_BLOCKED_50]: {
       id: AchievementType.SITES_BLOCKED_50,
       name: t('achievements.sitesBlocked50Name'),
       description: t('achievements.sitesBlocked50Desc'),
-      icon: '🦢', // Crane - 50 sites
+      icon: '⚫', // Black Belt
     },
     [AchievementType.SITES_BLOCKED_100]: {
       id: AchievementType.SITES_BLOCKED_100,
       name: t('achievements.sitesBlocked100Name'),
       description: t('achievements.sitesBlocked100Desc'),
-      icon: '🦅', // Phoenix (鳳凰) - 100 sites
+      icon: '🥋', // Coral Belt
     },
     [AchievementType.WEEK_NO_BLOCK]: {
       id: AchievementType.WEEK_NO_BLOCK,
       name: t('achievements.weekNoBlockName'),
       description: t('achievements.weekNoBlockDesc'),
-      icon: '🧘', // Zen Master - perfect week
+      icon: '🔴', // Red Belt
     },
   }
 
@@ -149,11 +149,14 @@ const ACHIEVEMENT_CHECKS: Record<
  * This is called only when ACHIEVEMENT_DEFINITIONS is accessed
  */
 function getAchievementDefinitionsInternal(): Record<AchievementType, AchievementDefinition> {
-  return Object.keys(ACHIEVEMENT_CHECKS).reduce((acc, key) => {
-    const type = key as AchievementType
-    acc[type] = getLocalizedAchievement(type)
-    return acc
-  }, {} as Record<AchievementType, AchievementDefinition>)
+  return Object.keys(ACHIEVEMENT_CHECKS).reduce(
+    (acc, key) => {
+      const type = key as AchievementType
+      acc[type] = getLocalizedAchievement(type)
+      return acc
+    },
+    {} as Record<AchievementType, AchievementDefinition>
+  )
 }
 
 // Legacy: Keep for backward compatibility
@@ -184,6 +187,7 @@ export const ACHIEVEMENT_DEFINITIONS = new Proxy(
 export const AchievementsDataSchema = z.object({
   unlocked: z.array(z.nativeEnum(AchievementType)).default([]),
   progress: z.record(z.string(), z.unknown()).default({}),
+  unlockedAt: z.record(z.string(), z.number()).default({}),
   lastChecked: z.number().nullable(),
 })
 
@@ -217,6 +221,7 @@ export async function initAchievements(): Promise<void> {
         [STORAGE_KEYS.ACHIEVEMENTS]: {
           unlocked: [],
           progress: {},
+          unlockedAt: {},
           lastChecked: null,
         },
       })
@@ -241,7 +246,7 @@ export async function getAchievements(): Promise<AchievementsData> {
     return data[STORAGE_KEYS.ACHIEVEMENTS] as AchievementsData
   } catch (err) {
     console.error('[Achievements] Error getting achievements:', err)
-    return { unlocked: [], progress: {}, lastChecked: null }
+    return { unlocked: [], progress: {}, unlockedAt: {}, lastChecked: null }
   }
 }
 
@@ -261,16 +266,14 @@ export async function checkAchievements(
   try {
     const achievementsData = await getAchievements()
     const unlocked = achievementsData.unlocked || []
+    const unlockedAt: Record<string, number> = { ...(achievementsData.unlockedAt || {}) }
     const newAchievements: UnlockedAchievement[] = []
 
-    // Check each achievement
     for (const type of Object.keys(ACHIEVEMENT_CHECKS) as AchievementType[]) {
-      // Skip already unlocked
       if (unlocked.includes(type)) {
         continue
       }
 
-      // Check achievement condition
       let passed = false
       try {
         const checkFn = ACHIEVEMENT_CHECKS[type]
@@ -285,21 +288,23 @@ export async function checkAchievements(
       }
 
       if (passed) {
+        const now = Date.now()
         unlocked.push(type)
+        unlockedAt[type] = now
         const definition = getLocalizedAchievement(type)
         newAchievements.push({
           ...definition,
-          unlockedAt: Date.now(),
+          unlockedAt: now,
         })
       }
     }
 
-    // Save updated achievements
     if (newAchievements.length > 0) {
       await browser.storage.local.set({
         [STORAGE_KEYS.ACHIEVEMENTS]: {
           unlocked,
           progress: achievementsData.progress || {},
+          unlockedAt,
           lastChecked: Date.now(),
         },
       })
@@ -412,9 +417,7 @@ export function getAllAchievementDefinitions(): AchievementDefinition[] {
  * @param type - Achievement type
  * @returns Achievement definition or undefined
  */
-export function getAchievementDefinition(
-  type: AchievementType
-): AchievementDefinition | undefined {
+export function getAchievementDefinition(type: AchievementType): AchievementDefinition | undefined {
   return getLocalizedAchievement(type)
 }
 
@@ -442,12 +445,13 @@ export async function getUnlockedAchievements(): Promise<UnlockedAchievement[]> 
     const data = await getAchievements()
     const unlocked: UnlockedAchievement[] = []
 
+    const times = data.unlockedAt || {}
     for (const type of data.unlocked) {
       const definition = getLocalizedAchievement(type)
       if (definition) {
         unlocked.push({
           ...definition,
-          unlockedAt: Date.now(), // Note: We don't store unlock times in current format
+          unlockedAt: times[type] || 0,
         })
       }
     }
@@ -469,6 +473,7 @@ export async function resetAchievements(): Promise<boolean> {
       [STORAGE_KEYS.ACHIEVEMENTS]: {
         unlocked: [],
         progress: {},
+        unlockedAt: {},
         lastChecked: null,
       },
     })

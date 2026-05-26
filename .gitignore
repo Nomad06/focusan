@@ -40,3 +40,11 @@ yarn-error.log*
 *.zip
 *.crx
 *.pem
+
+# Local clutter (untracked design/spec/screenshot artifacts)
+.kiro/
+desktop-app/
+screenshots/
+design.md
+lint_output.txt
+*.pdf

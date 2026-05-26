@@ -19,9 +19,7 @@ import { getSiteStats, recordVisitAttempt } from '../shared/domain/stats'
 /**
  * Extension installation/update handler
  */
-async function handleInstalled(
-  details: browser.Runtime.OnInstalledDetailsType
-): Promise<void> {
+async function handleInstalled(details: browser.Runtime.OnInstalledDetailsType): Promise<void> {
   console.log('[Background] Extension installed/updated:', details.reason)
 
   try {
@@ -30,7 +28,7 @@ async function handleInstalled(
 
       // Open Welcome Page
       browser.tabs.create({
-        url: browser.runtime.getURL('src/pages/welcome/index.html')
+        url: browser.runtime.getURL('src/pages/welcome/index.html'),
       })
 
       // Initialize focus sessions
@@ -165,7 +163,9 @@ async function handleTabUpdate(
     const focusSession = await getCurrentSession()
     const isFocusWorking = focusSession && focusSession.state === SessionState.WORKING
     const focusMode = isFocusWorking ? focusSession.mode || 'blocklist' : 'blocklist'
-    const focusSessionSites = isFocusWorking ? new Set(focusSession.sitesToBlock) : new Set<string>()
+    const focusSessionSites = isFocusWorking
+      ? new Set(focusSession.sitesToBlock)
+      : new Set<string>()
 
     // WHITELIST MODE LOGIC
     if (focusMode === 'whitelist' && isFocusWorking) {
@@ -244,7 +244,14 @@ async function handleTabUpdate(
  */
 async function handleNavigationError(details: any): Promise<void> {
   try {
-    console.log('[Background] Navigation error:', details.error, 'url:', details.url, 'tabId:', details.tabId)
+    console.log(
+      '[Background] Navigation error:',
+      details.error,
+      'url:',
+      details.url,
+      'tabId:',
+      details.tabId
+    )
 
     // Only handle DNR blocks
     if (details.error !== 'net::ERR_BLOCKED_BY_CLIENT') {
@@ -307,7 +314,9 @@ async function handleHistoryStateUpdate(
     const focusSession = await getCurrentSession()
     const isFocusWorking = focusSession && focusSession.state === SessionState.WORKING
     const focusMode = isFocusWorking ? focusSession.mode || 'blocklist' : 'blocklist'
-    const focusSessionSites = isFocusWorking ? new Set(focusSession.sitesToBlock) : new Set<string>()
+    const focusSessionSites = isFocusWorking
+      ? new Set(focusSession.sitesToBlock)
+      : new Set<string>()
 
     // WHITELIST MODE LOGIC
     if (focusMode === 'whitelist' && isFocusWorking) {
@@ -315,7 +324,12 @@ async function handleHistoryStateUpdate(
         const blockedUrl = browser.runtime.getURL(
           `src/pages/blocked/index.html?url=${encodeURIComponent(details.url)}`
         )
-        console.log('[Background] ⛔ Blocking SPA navigation (whitelist):', hostname, 'redirecting to:', blockedUrl)
+        console.log(
+          '[Background] ⛔ Blocking SPA navigation (whitelist):',
+          hostname,
+          'redirecting to:',
+          blockedUrl
+        )
         await browser.tabs.update(details.tabId, { url: blockedUrl })
         return
       }
@@ -330,7 +344,12 @@ async function handleHistoryStateUpdate(
       const blockedUrl = browser.runtime.getURL(
         `src/pages/blocked/index.html?url=${encodeURIComponent(details.url)}`
       )
-      console.log('[Background] ⛔ Blocking SPA navigation (focus session):', hostname, 'redirecting to:', blockedUrl)
+      console.log(
+        '[Background] ⛔ Blocking SPA navigation (focus session):',
+        hostname,
+        'redirecting to:',
+        blockedUrl
+      )
       await browser.tabs.update(details.tabId, { url: blockedUrl })
       return
     }
@@ -372,7 +391,12 @@ async function handleHistoryStateUpdate(
         `src/pages/blocked/index.html?url=${encodeURIComponent(details.url)}`
       )
 
-      console.log('[Background] ⛔ Blocking SPA navigation to:', hostname, 'redirecting to:', blockedUrl)
+      console.log(
+        '[Background] ⛔ Blocking SPA navigation to:',
+        hostname,
+        'redirecting to:',
+        blockedUrl
+      )
       await browser.tabs.update(details.tabId, { url: blockedUrl })
       return
     }
@@ -383,45 +407,28 @@ async function handleHistoryStateUpdate(
   }
 }
 
-/**
- * Initialize all background systems
- */
-async function initialize(): Promise<void> {
-  console.log('[Background] Initializing Brain Defender v2.0.0...')
+// MV3 requires event listeners to be registered synchronously at the top
+// level of the service worker script. Registering inside an async init() means
+// Chrome can replay events (onInstalled, onStartup) before the listeners exist
+// and silently drop them. Keep all addListener() calls here, eagerly.
+console.log('[Background] Registering listeners (sync)…')
+initializeMessageHandlers()
+initializeAlarmHandlers()
+initializeStorageListener()
+browser.runtime.onInstalled.addListener(handleInstalled)
+browser.runtime.onStartup.addListener(handleStartup)
+browser.action.onClicked.addListener(handleActionClick)
+browser.tabs.onUpdated.addListener(handleTabUpdate)
+browser.webNavigation.onErrorOccurred.addListener(handleNavigationError)
+browser.webNavigation.onHistoryStateUpdated.addListener(handleHistoryStateUpdate)
 
-  try {
-    // Initialize message handlers
-    initializeMessageHandlers()
-
-    // Initialize alarm handlers
-    initializeAlarmHandlers()
-
-    // Register event listeners
-    browser.runtime.onInstalled.addListener(handleInstalled)
-    browser.runtime.onStartup.addListener(handleStartup)
-    browser.action.onClicked.addListener(handleActionClick)
-    browser.tabs.onUpdated.addListener(handleTabUpdate)
-    browser.webNavigation.onErrorOccurred.addListener(handleNavigationError)
-    browser.webNavigation.onHistoryStateUpdated.addListener(handleHistoryStateUpdate)
-
-    // Initialize storage listener for sync
-    initializeStorageListener()
-
-    console.log('[Background] Brain Defender initialized successfully')
-
-    // Perform startup tasks
-    await handleStartup()
-  } catch (err) {
-    console.error('[Background] Fatal error during initialization:', err)
-  }
-}
-
-// Start the extension
-initialize().catch(err => {
-  console.error('[Background] Fatal error in main initialization:', err)
+// Best-effort startup work after listeners are registered. Failures here must
+// not prevent listeners from servicing events.
+handleStartup().catch(err => {
+  console.error('[Background] Error during startup tasks:', err)
 })
 
 /**
  * Export types for testing
  */
-export type { }
+export type {}

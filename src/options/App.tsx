@@ -36,8 +36,6 @@ import {
 import { ChallengeModal } from '../shared/components/ChallengeModal'
 import ScheduleModal from './ScheduleModal'
 import ConditionalRulesModal from './ConditionalRulesModal'
-import StrictLockModal from './StrictLockModal'
-import { getStrictMode } from '../shared/storage/storage'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
 import type { ConditionalRule } from '../shared/domain/conditional-rules'
 import Heatmap from '../shared/components/Heatmap'
@@ -75,15 +73,7 @@ const App: React.FC = () => {
   const [showNewScheduleModal, setShowNewScheduleModal] = useState<boolean>(false)
   const [showNewRulesModal, setShowNewRulesModal] = useState<boolean>(false)
   // Security State
-  const [strictModeEnabled, setStrictModeEnabled] = useState(false)
-  const [strictModeStart, setStrictModeStart] = useState<number | undefined>(undefined)
   const [challengeModeEnabled, setChallengeModeEnabled] = useState(false)
-
-  // Modals
-  const [showStrictLockModal, setShowStrictLockModal] = useState(false)
-  const [pendingStrictAction, setPendingStrictAction] = useState<(() => Promise<void>) | null>(null)
-
-  // Generic pending action for friction/Pin
 
   const [sites, setSites] = useState<SiteObject[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
@@ -170,12 +160,6 @@ const App: React.FC = () => {
     }
   }
 
-  const loadStrictMode = async () => {
-    const { enabled, startTime } = await getStrictMode()
-    setStrictModeEnabled(enabled)
-    setStrictModeStart(startTime)
-  }
-
   const loadChallengeMode = async () => {
     const { enabled } = await messagingClient.getChallengeMode()
     setChallengeModeEnabled(enabled)
@@ -187,7 +171,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     loadSettings()
-    loadStrictMode()
     loadChallengeMode()
   }, [])
 
@@ -297,11 +280,8 @@ const App: React.FC = () => {
     })
   }
 
-  const checkStrictMode = async (action: () => Promise<void>) => {
-    if (strictModeEnabled) {
-      setPendingStrictAction(() => action)
-      setShowStrictLockModal(true)
-    } else if (challengeModeEnabled) {
+  const checkChallenge = async (action: () => Promise<void>) => {
+    if (challengeModeEnabled) {
       // Use ChallengeModal for friction
       setPendingAction({
         type: 'delete',
@@ -320,7 +300,7 @@ const App: React.FC = () => {
   const performRemoveSites = async (hostsToDelete: string[]) => {
     if (hostsToDelete.length === 0) return
 
-    await checkStrictMode(async () => {
+    await checkChallenge(async () => {
       try {
         for (const host of hostsToDelete) {
           await messagingClient.removeSite(host)
@@ -355,7 +335,7 @@ const App: React.FC = () => {
     const requiresChallenge = shouldShowChallengeForSchedule(oldSchedule, schedule)
 
     const saveSchedule = async () => {
-      await checkStrictMode(async () => {
+      await checkChallenge(async () => {
         try {
           await messagingClient.updateSite(schedulingHost.host, { schedule })
           await loadSites()
@@ -400,7 +380,7 @@ const App: React.FC = () => {
     const requiresChallenge = shouldShowChallengeForRules(oldRules, rules)
 
     const saveRules = async () => {
-      await checkStrictMode(async () => {
+      await checkChallenge(async () => {
         try {
           await messagingClient.updateSite(conditionalRulesHost.host, { conditionalRules: rules })
           await loadSites()
@@ -493,7 +473,7 @@ const App: React.FC = () => {
       return
     }
 
-    await checkStrictMode(async () => {
+    await checkChallenge(async () => {
       try {
         await messagingClient.clearStats()
         await loadStats()
@@ -687,21 +667,6 @@ const App: React.FC = () => {
             <LanguageSwitcher currentLang={language} onLanguageChange={handleLanguageChange} />
           </div>
         </div>
-
-        <StrictLockModal
-          isOpen={showStrictLockModal}
-          onClose={() => {
-            setShowStrictLockModal(false)
-            setPendingStrictAction(null)
-          }}
-          onSuccess={async () => {
-            if (pendingStrictAction) {
-              await pendingStrictAction()
-            }
-            setPendingStrictAction(null)
-          }}
-          startTime={strictModeStart}
-        />
 
         <AnimatePresence>
           {pendingAction && (

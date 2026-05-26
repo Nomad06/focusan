@@ -202,8 +202,7 @@ export async function stopFocusSession(): Promise<boolean> {
     } as FocusSession & { completedAt: number })
 
     // Update statistics
-    if (!data.stats)
-      data.stats = { totalSessions: 0, totalWorkTime: 0, totalBreakTime: 0 }
+    if (!data.stats) data.stats = { totalSessions: 0, totalWorkTime: 0, totalBreakTime: 0 }
     data.stats.totalSessions = (data.stats.totalSessions || 0) + 1
     data.stats.totalWorkTime = (data.stats.totalWorkTime || 0) + actualDuration
 
@@ -236,11 +235,7 @@ export async function stopFocusSession(): Promise<boolean> {
 export async function pauseFocusSession(): Promise<boolean> {
   try {
     const data = await getFocusSessionsData()
-    if (
-      !data ||
-      !data.currentSession ||
-      data.currentSession.state !== SessionState.WORKING
-    ) {
+    if (!data || !data.currentSession || data.currentSession.state !== SessionState.WORKING) {
       return false
     }
 
@@ -265,23 +260,26 @@ export async function pauseFocusSession(): Promise<boolean> {
 export async function resumeFocusSession(): Promise<boolean> {
   try {
     const data = await getFocusSessionsData()
-    if (
-      !data ||
-      !data.currentSession ||
-      data.currentSession.state !== SessionState.PAUSED
-    ) {
+    if (!data || !data.currentSession || data.currentSession.state !== SessionState.PAUSED) {
       return false
     }
 
     const session = data.currentSession
-    const pausedDuration = Date.now() - (session.pausedAt || Date.now())
+    if (session.pausedAt == null) {
+      console.warn('[FocusSessions] resume called with no pausedAt timestamp')
+      session.state = SessionState.WORKING
+      await saveFocusSessionsData(data)
+      await browser.alarms.create(ALARM_SESSION_NAME, { when: session.endTime })
+      return true
+    }
+    const now = Date.now()
+    const pausedDuration = now - session.pausedAt
     session.pausedTime = (session.pausedTime || 0) + pausedDuration
     session.state = SessionState.WORKING
     session.pausedAt = null
 
-    // Recalculate end time
-    const remainingTime = session.endTime - Date.now() + session.pausedTime
-    session.endTime = Date.now() + remainingTime
+    // Push end time forward by the pause duration
+    session.endTime = session.endTime + pausedDuration
 
     await saveFocusSessionsData(data)
 
@@ -318,11 +316,7 @@ export async function getCurrentSession(): Promise<FocusSession | null> {
 export async function getRemainingTime(): Promise<number> {
   try {
     const session = await getCurrentSession()
-    if (
-      !session ||
-      session.state === SessionState.IDLE ||
-      session.state === SessionState.PAUSED
-    ) {
+    if (!session || session.state === SessionState.IDLE || session.state === SessionState.PAUSED) {
       return 0
     }
 

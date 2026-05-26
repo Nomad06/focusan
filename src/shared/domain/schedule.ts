@@ -61,8 +61,11 @@ export function isScheduleActive(schedule: Schedule | null | undefined): boolean
       return true
 
     case ScheduleMode.VACATION:
-      // Vacation mode - all blocks disabled
-      // TODO: Check vacationUntil timestamp if set
+      // Vacation mode - all blocks disabled until vacationUntil timestamp.
+      // If vacationUntil is null/undefined, vacation is permanent (legacy behavior).
+      if (schedule.vacationUntil && Date.now() >= schedule.vacationUntil) {
+        return true
+      }
       return false
 
     case ScheduleMode.WORK_HOURS: {
@@ -70,7 +73,7 @@ export function isScheduleActive(schedule: Schedule | null | undefined): boolean
       const workStart = schedule.workHours?.start ? parseTime(schedule.workHours.start) : 9 * 60
       const workEnd = schedule.workHours?.end ? parseTime(schedule.workHours.end) : 18 * 60
       const isWorkDay = currentDay >= 1 && currentDay <= 5 // Mon-Fri
-      return isWorkDay && currentTime >= workStart && currentTime < workEnd
+      return isWorkDay && currentTime >= workStart && currentTime <= workEnd
     }
 
     case ScheduleMode.WEEKENDS:
@@ -88,7 +91,7 @@ export function isScheduleActive(schedule: Schedule | null | undefined): boolean
 
       // Check if current day is in the list
       const isCustomDay = schedule.customDays.includes(currentDay)
-      const isCustomTime = currentTime >= customStart && currentTime < customEnd
+      const isCustomTime = currentTime >= customStart && currentTime <= customEnd
 
       return isCustomDay && isCustomTime
     }
@@ -112,7 +115,7 @@ export function isScheduleActive(schedule: Schedule | null | undefined): boolean
       if (daySchedule.timeRange) {
         const dayStart = parseTime(daySchedule.timeRange.start || '00:00')
         const dayEnd = parseTime(daySchedule.timeRange.end || '23:59')
-        return currentTime >= dayStart && currentTime < dayEnd
+        return currentTime >= dayStart && currentTime <= dayEnd
       }
 
       return true // Default: block

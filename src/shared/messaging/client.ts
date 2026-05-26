@@ -113,7 +113,11 @@ export const messagingClient = {
   /**
    * Start a focus session
    */
-  async startFocusSession(duration?: number, sites?: string[], mode: 'blocklist' | 'whitelist' = 'blocklist'): Promise<boolean> {
+  async startFocusSession(
+    duration?: number,
+    sites?: string[],
+    mode: 'blocklist' | 'whitelist' = 'blocklist'
+  ): Promise<boolean> {
     const response = await sendMessage<MessageType.START_FOCUS_SESSION>({
       type: MessageType.START_FOCUS_SESSION,
       duration,
@@ -302,27 +306,6 @@ export const messagingClient = {
   },
 
   /**
-   * Get strict mode status
-   */
-  async getStrictMode(): Promise<{ enabled: boolean; startTime?: number }> {
-    const response = await sendMessage({
-      type: MessageType.GET_STRICT_MODE,
-    })
-    return response
-  },
-
-  /**
-   * Set strict mode
-   */
-  async setStrictMode(enabled: boolean): Promise<boolean> {
-    const response = await sendMessage({
-      type: MessageType.SET_STRICT_MODE,
-      enabled,
-    })
-    return response.success
-  },
-
-  /**
    * Get challenge mode status
    */
   async getChallengeMode(): Promise<{ enabled: boolean }> {
@@ -342,7 +325,6 @@ export const messagingClient = {
     })
     return response.success
   },
-
 }
 
 /**

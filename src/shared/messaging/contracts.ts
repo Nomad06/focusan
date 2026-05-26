@@ -50,10 +50,8 @@ export enum MessageType {
   GET_MIGRATION_STATUS = 'GET_MIGRATION_STATUS',
   RUN_MIGRATIONS = 'RUN_MIGRATIONS',
   SET_ONBOARDING_SEEN = 'SET_ONBOARDING_SEEN',
-  GET_STRICT_MODE = 'GET_STRICT_MODE',
   GET_CHALLENGE_MODE = 'GET_CHALLENGE_MODE',
   SET_CHALLENGE_MODE = 'SET_CHALLENGE_MODE',
-  SET_STRICT_MODE = 'SET_STRICT_MODE',
 }
 
 /**
@@ -81,10 +79,7 @@ export interface SimpleMessage extends BaseMessage {
   | MessageType.GET_ACHIEVEMENTS
   | MessageType.EXPORT_DATA
   | MessageType.GET_MIGRATION_STATUS
-  | MessageType.GET_MIGRATION_STATUS
   | MessageType.RUN_MIGRATIONS
-  | MessageType.RUN_MIGRATIONS
-  | MessageType.GET_STRICT_MODE
   | MessageType.GET_CHALLENGE_MODE
 }
 
@@ -208,10 +203,8 @@ export type Message =
   | RecordBlockMessage
   | CheckAchievementsMessage
   | ImportDataMessage
-  | ImportDataMessage
   | SetOnboardingSeenMessage
   | SetChallengeModeMessage
-  | { type: MessageType.SET_STRICT_MODE; enabled: boolean }
 
 /**
  * Response types for each message
@@ -239,13 +232,10 @@ export interface MessageResponses {
   [MessageType.EXPORT_DATA]: { data: string }
   [MessageType.IMPORT_DATA]: { success: boolean }
   [MessageType.GET_MIGRATION_STATUS]: { version: number; needsMigration: boolean }
-  [MessageType.GET_MIGRATION_STATUS]: { version: number; needsMigration: boolean }
   [MessageType.RUN_MIGRATIONS]: { result: unknown }
   [MessageType.SET_ONBOARDING_SEEN]: { success: boolean }
-  [MessageType.GET_STRICT_MODE]: { enabled: boolean; startTime?: number }
   [MessageType.GET_CHALLENGE_MODE]: { enabled: boolean }
   [MessageType.SET_CHALLENGE_MODE]: { success: boolean }
-  [MessageType.SET_STRICT_MODE]: { success: boolean }
 }
 
 /**
@@ -282,7 +272,11 @@ export function isErrorResponse(response: unknown): response is ErrorResponse {
 /**
  * Create an error response
  */
-export function createErrorResponse(error: string, code?: string, details?: unknown): ErrorResponse {
+export function createErrorResponse(
+  error: string,
+  code?: string,
+  details?: unknown
+): ErrorResponse {
   return { error, code, details }
 }
 

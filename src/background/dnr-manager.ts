@@ -31,7 +31,14 @@ async function buildRules() {
     const focusMode = isFocusWorking ? focusSession.mode || 'blocklist' : 'blocklist'
     const focusSessionSites = isFocusWorking ? focusSession.sitesToBlock : []
 
-    console.log('[DNR] Focus session active:', !!focusSession, 'mode:', focusMode, 'sites:', focusSessionSites.length)
+    console.log(
+      '[DNR] Focus session active:',
+      !!focusSession,
+      'mode:',
+      focusMode,
+      'sites:',
+      focusSessionSites.length
+    )
 
     // Whitelist Mode Logic
     if (focusMode === 'whitelist') {
@@ -43,7 +50,7 @@ async function buildRules() {
         id: ruleIdCounter++,
         priority: 1,
         action: { type: 'block' as const },
-        condition: { urlFilter: '*', resourceTypes: ['main_frame' as const] }
+        condition: { urlFilter: '*', resourceTypes: ['main_frame' as const] },
       })
 
       // 2. Allow Focus Session Sites (Priority 2)
@@ -55,8 +62,8 @@ async function buildRules() {
           action: { type: 'allow' as const },
           condition: {
             regexFilter: hostToRegex(host),
-            resourceTypes: ['main_frame' as const]
-          }
+            resourceTypes: ['main_frame' as const],
+          },
         })
       }
 
@@ -69,8 +76,8 @@ async function buildRules() {
           action: { type: 'allow' as const },
           condition: {
             regexFilter: hostToRegex(entry.host),
-            resourceTypes: ['main_frame' as const]
-          }
+            resourceTypes: ['main_frame' as const],
+          },
         })
       }
 
@@ -158,8 +165,14 @@ async function buildRules() {
   }
 }
 
-
 let rebuildLock = Promise.resolve() as Promise<any>
+
+// Debounce coalesces rapid successive rebuilds (e.g. bulk add/remove,
+// alarms firing during user activity) into a single underlying rebuild.
+const REBUILD_DEBOUNCE_MS = 150
+let pendingRebuild: Promise<boolean> | null = null
+let pendingTimer: ReturnType<typeof setTimeout> | null = null
+let pendingResolve: ((v: boolean) => void) | null = null
 
 /**
  * Rebuild all DNR rules
@@ -169,6 +182,25 @@ let rebuildLock = Promise.resolve() as Promise<any>
  * @returns true if successful
  */
 export async function rebuildRules(): Promise<boolean> {
+  if (pendingRebuild) return pendingRebuild
+
+  pendingRebuild = new Promise<boolean>(resolve => {
+    pendingResolve = resolve
+  })
+
+  if (pendingTimer) clearTimeout(pendingTimer)
+  pendingTimer = setTimeout(() => {
+    const resolve = pendingResolve!
+    pendingResolve = null
+    pendingRebuild = null
+    pendingTimer = null
+    runRebuild().then(resolve, () => resolve(false))
+  }, REBUILD_DEBOUNCE_MS)
+
+  return pendingRebuild
+}
+
+async function runRebuild(): Promise<boolean> {
   const currentLock = rebuildLock
 
   // Chain this request to the end of the current lock

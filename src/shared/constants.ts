@@ -13,7 +13,6 @@ export const STORAGE_KEYS = {
   FOCUS_SESSIONS: 'focusSessions',
   ACHIEVEMENTS: 'achievements',
   CATEGORIES: 'siteCategories',
-  STRICT_MODE: 'strictMode',
   CHALLENGE_MODE: 'challengeMode',
 } as const
 

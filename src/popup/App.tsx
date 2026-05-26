@@ -11,12 +11,9 @@ import { t, initI18n } from '../shared/i18n'
 import { SessionState, type FocusSession } from '../shared/domain/focus-sessions'
 import { ZenSettingsIcon, ZenCloseIcon } from '../shared/components/Icons'
 import { playSound, SoundType } from '../shared/sound'
-import { StrictLockModal } from '../shared/components/StrictLockModal'
 import { ChallengeModal } from '../shared/components/ChallengeModal'
-import { ProtectionControl } from './components/ProtectionControl'
-import { SetupInstructions } from './components/SetupInstructions'
-import type { ProtectionMode } from '../shared/protection/types'
 import { useToast } from '../shared/components/Toast'
+import { useEscapeKey } from '../shared/hooks/useEscapeKey'
 
 // Animation variants
 const containerVariants = {
@@ -48,7 +45,6 @@ const breathingVariants = {
 
 const App: React.FC = () => {
   const toast = useToast()
-  const [sitesCount, setSitesCount] = useState<number>(0)
   const [currentSession, setCurrentSession] = useState<FocusSession | null>(null)
   const [remainingTime, setRemainingTime] = useState<number>(0)
   const [showPomodoroModal, setShowPomodoroModal] = useState<boolean>(false)
@@ -57,65 +53,7 @@ const App: React.FC = () => {
   const [currentHostBlocked, setCurrentHostBlocked] = useState<boolean>(false)
   const [breathState, setBreathState] = useState<'inhale' | 'exhale'>('inhale')
   const [showChallengeModal, setShowChallengeModal] = useState<boolean>(false)
-  const [strictMode, setStrictMode] = useState<boolean>(false)
   const [challengeMode, setChallengeMode] = useState<boolean>(false)
-  const [requireDesktopApp, setRequireDesktopApp] = useState<boolean>(false)
-
-  // Security State
-  const [protectionStatus, setProtectionStatus] = useState<
-    import('../shared/protection/types').ProtectionStatus | null
-  >(null)
-
-  // Security State
-  const [showStrictLockModal, setShowStrictLockModal] = useState(false)
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
-  const [isCheckingConnection, setIsCheckingConnection] = useState(false)
-
-  const handleSetProtectionMode = async (mode: ProtectionMode) => {
-    try {
-      const success = await messagingClient.setProtectionMode(mode)
-      if (success) {
-        await loadProtectionStatus()
-      }
-    } catch (err) {
-      console.error('[Popup] Error setting protection mode:', err)
-    }
-  }
-
-  const loadProtectionStatus = async () => {
-    try {
-      const status = await messagingClient.getProtectionStatus()
-      setProtectionStatus(status)
-    } catch (err) {
-      console.error('[Popup] Error loading protection status:', err)
-      // If error, assume disconnected
-      setProtectionStatus(prev => (prev ? { ...prev, desktopAppConnected: false } : null))
-    }
-  }
-
-  const handleCheckConnection = async () => {
-    setIsCheckingConnection(true)
-    try {
-      const connected = await messagingClient.checkConnection()
-      // If connected, reload full status
-      if (connected) {
-        await loadProtectionStatus()
-      } else {
-        // Explicitly set disconnected
-        setProtectionStatus(prev => (prev ? { ...prev, desktopAppConnected: false } : null))
-      }
-    } catch (err) {
-      console.error('[Popup] Connection check failed:', err)
-      setProtectionStatus(prev => (prev ? { ...prev, desktopAppConnected: false } : null))
-    } finally {
-      setIsCheckingConnection(false)
-    }
-  }
-
-  useEffect(() => {
-    const interval = setInterval(loadProtectionStatus, 5000)
-    return () => clearInterval(interval)
-  }, [])
 
   // Detect current host
   useEffect(() => {
@@ -140,13 +78,11 @@ const App: React.FC = () => {
   const loadSitesCount = async () => {
     try {
       const sites = await messagingClient.getSites()
-      setSitesCount(sites.length)
       if (currentHost) {
         setCurrentHostBlocked(sites.some(s => s.host === currentHost))
       }
     } catch (err) {
       console.error('[Popup] Error loading sites count:', err)
-      setSitesCount(0)
     }
   }
 
@@ -188,18 +124,10 @@ const App: React.FC = () => {
       await initI18n()
       await loadSitesCount()
       await loadFocusSession()
-      await loadProtectionStatus() // Load initial status
 
       try {
-        const { enabled } = await messagingClient.getStrictMode()
-        setStrictMode(enabled)
-        // setStrictModeStart(startTime) // Not available in contract yet
-
         const challenge = await messagingClient.getChallengeMode()
         setChallengeMode(challenge.enabled)
-
-        const requireDesktop = await messagingClient.getRequireDesktopApp()
-        setRequireDesktopApp(requireDesktop.enabled)
       } catch (err) {
         console.error('[Popup] Error loading status:', err)
       }
@@ -224,7 +152,7 @@ const App: React.FC = () => {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [currentSession])
+  }, [currentSession?.state, currentSession?.endTime])
 
   // Add current site to block list
   const handleAddCurrentSite = async () => {
@@ -276,12 +204,8 @@ const App: React.FC = () => {
     }
   }
 
-  const checkStrictMode = (action: () => void) => {
-    if (strictMode) {
-      setPendingAction(() => action)
-      setShowStrictLockModal(true)
-    } else if (challengeMode) {
-      setPendingAction(() => action)
+  const checkChallenge = (action: () => void) => {
+    if (challengeMode) {
       setShowChallengeModal(true)
     } else {
       action()
@@ -291,7 +215,7 @@ const App: React.FC = () => {
   // Stop focus session
   const handleStopFocusSession = async () => {
     playSound(SoundType.SOFT_GONG)
-    checkStrictMode(performStopSession)
+    checkChallenge(performStopSession)
   }
 
   const performStopSession = async () => {
@@ -326,18 +250,6 @@ const App: React.FC = () => {
     )
   }
 
-  // Render Setup Instructions if not connected (and not loading)
-  if (!loading && protectionStatus && !protectionStatus.desktopAppConnected && requireDesktopApp) {
-    return (
-      <div className="w-[340px] min-h-[520px] bg-washi flex flex-col font-sans overflow-hidden relative">
-        <SetupInstructions
-          onCheckConnection={handleCheckConnection}
-          isChecking={isCheckingConnection}
-        />
-      </div>
-    )
-  }
-
   return (
     <div className="w-[340px] min-h-[520px] flex flex-col p-5 font-sans overflow-hidden relative" style={{ background: 'var(--bg1)' }}>
       {/* Asanoha pattern overlay */}
@@ -354,20 +266,6 @@ const App: React.FC = () => {
             onStart={async () => {
               await loadFocusSession()
               setShowPomodoroModal(false)
-            }}
-          />
-        ) : showStrictLockModal ? ( // Added StrictLockModal
-          <StrictLockModal
-            key="strictLockModal"
-            isOpen={showStrictLockModal}
-            onClose={() => {
-              setShowStrictLockModal(false)
-              setPendingAction(null)
-            }}
-            onSuccess={() => {
-              if (pendingAction) pendingAction()
-              setPendingAction(null)
-              setShowStrictLockModal(false)
             }}
           />
         ) : showChallengeModal ? (
@@ -412,6 +310,7 @@ const App: React.FC = () => {
                 whileHover={{ rotate: 90, scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={handleOpenOptions}
+                aria-label={t('common.settings') || 'Settings'}
                 className="transition-all p-2 rounded"
                 style={{ color: 'var(--nezumi)' }}
               >
@@ -542,6 +441,11 @@ const App: React.FC = () => {
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={handlePauseFocusSession}
+                      aria-label={
+                        currentSession?.state === SessionState.PAUSED
+                          ? t('focusSession.resume')
+                          : t('focusSession.pause')
+                      }
                       className="btn secondary flex-1"
                     >
                       {currentSession?.state === SessionState.PAUSED ? '▶ ' + t('focusSession.resume') : '❘❘ ' + t('focusSession.pause')}
@@ -549,6 +453,7 @@ const App: React.FC = () => {
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={handleStopFocusSession}
+                      aria-label={t('focusSession.stop')}
                       className="btn danger px-5"
                     >
                       {t('focusSession.stop')}
@@ -558,6 +463,7 @@ const App: React.FC = () => {
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={handleStartFocusSession}
+                    aria-label={t('bushido.engage')}
                     className="btn primary w-full lg"
                     style={{ paddingTop: 14, paddingBottom: 14 }}
                   >
@@ -604,16 +510,6 @@ const App: React.FC = () => {
                 )}
               </motion.div>
             )}
-
-            {/* Footer / Status Card */}
-            <div className="mt-4">
-              <ProtectionControl
-                status={protectionStatus}
-                sitesCount={sitesCount}
-                onSetMode={handleSetProtectionMode}
-                requireDesktopApp={requireDesktopApp}
-              />
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -635,6 +531,8 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
   const [duration, setDuration] = useState<number>(25)
   const [mode, setMode] = useState<'blocklist' | 'whitelist'>('blocklist')
   const toast = useToast()
+
+  useEscapeKey(true, onClose)
 
   // Load sites
   useEffect(() => {
@@ -706,12 +604,16 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
       className="flex flex-col h-full gap-4 relative z-10"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pomodoro-modal-title"
     >
       <div className="flex justify-between items-center">
-        <h2 className="font-serif font-medium text-xl text-sumi-black">
+        <h2 id="pomodoro-modal-title" className="font-serif font-medium text-xl text-sumi-black">
           {t('focusSession.selectSites')}
         </h2>
         <button
+          aria-label={t('common.close') || 'Close'}
           className="text-sumi-gray hover:text-sumi-black p-2 transition-transform hover:rotate-90 rounded-full hover:bg-black/5"
           onClick={() => {
             playSound(SoundType.SOFT_GONG)
@@ -773,10 +675,10 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
           </div>
 
           {/* Main sites list */}
-          <div className="flex flex-col gap-2">
-            <label className="font-semibold text-[10px] text-sumi-gray uppercase tracking-widest pl-1">
+          <fieldset className="flex flex-col gap-2 border-0 p-0 m-0">
+            <legend className="font-semibold text-[10px] text-sumi-gray uppercase tracking-widest pl-1">
               {mode === 'whitelist' ? 'Allowed Sites' : t('focusSession.mainSites')}
-            </label>
+            </legend>
             <div className="washi-card border border-border p-2 max-h-48 overflow-y-auto">
               {sites.length === 0 ? (
                 <div className="text-sumi-gray text-center p-4 text-xs italic">
@@ -805,7 +707,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
                 </div>
               )}
             </div>
-          </div>
+          </fieldset>
 
           {/* Additional sites */}
           <div className="flex flex-col gap-2">
