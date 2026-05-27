@@ -45,6 +45,8 @@ yarn-error.log*
 .kiro/
 desktop-app/
 screenshots/
+# …but keep the published Chrome Web Store assets
+!store-assets/screenshots/
 design.md
 lint_output.txt
 *.pdf
