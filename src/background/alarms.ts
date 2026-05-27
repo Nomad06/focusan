@@ -10,10 +10,12 @@ import {
   SessionState,
   ALARM_SESSION_NAME,
 } from '../shared/domain/focus-sessions'
-import { cleanupExpiredWhitelist, getSites } from '../shared/storage/storage'
+import { cleanupExpiredWhitelist, getSites, getTempWhitelist } from '../shared/storage/storage'
 import { rebuildRules } from './dnr-manager'
 import { normalizeHost } from '../shared/utils/domain'
-import { addTimeSpent } from '../shared/domain/stats'
+import { addTimeSpent, getSiteStats } from '../shared/domain/stats'
+import { shouldBlockByConditionalRules } from '../shared/domain/conditional-rules'
+import { isScheduleActive } from '../shared/domain/schedule'
 
 /**
  * Alarm names
@@ -134,6 +136,9 @@ async function handleTimeTracking(): Promise<void> {
       return
     }
 
+    // Don't skip our own blocked page (handled by the chrome-extension guard
+    // above) — if we're already on it there's nothing to track.
+
     const hostname = normalizeHost(tab.url)
     if (!hostname) return
 
@@ -152,12 +157,27 @@ async function handleTimeTracking(): Promise<void> {
 
     if (!hasTimeLimit) return
 
+    // Respect schedule + temporary whitelist: don't accrue/enforce when the
+    // site isn't currently subject to blocking.
+    if (site.schedule && !isScheduleActive(site.schedule)) return
+    const tempWhitelist = await getTempWhitelist()
+    if (tempWhitelist.some(e => e.host === hostname)) return
+
     // Add 1 minute to time spent
     await addTimeSpent(hostname, 1)
     console.log('[Alarms] Added 1 minute to', hostname)
 
-    // Rebuild rules to check if time limit exceeded
-    await rebuildRules()
+    // Conditional-rule sites are NOT in the DNR rule set (DNR can't evaluate
+    // elapsed time), so rebuildRules() would be a no-op here. Enforce the limit
+    // directly: if it's now exceeded, eject the active tab to the blocked page.
+    const siteStats = await getSiteStats(hostname)
+    if (shouldBlockByConditionalRules(site, siteStats) && tab.id !== undefined) {
+      const blockedUrl = browser.runtime.getURL(
+        `src/pages/blocked/index.html?url=${encodeURIComponent(tab.url)}`
+      )
+      await browser.tabs.update(tab.id, { url: blockedUrl })
+      console.log('[Alarms] Time limit reached, redirected tab:', hostname)
+    }
   } catch (err) {
     console.error('[Alarms] Error tracking time:', err)
   }

@@ -14,7 +14,8 @@ export const SiteStatsSchema = z.object({
   firstBlocked: z.number(),
   lastBlocked: z.number(),
   visitsToday: z.number().min(0),
-  timeSpentToday: z.number().min(0), // minutes
+  timeSpentToday: z.number().min(0), // minutes (for the day named by timeSpentDate)
+  timeSpentDate: z.string().nullable().optional(), // YYYY-MM-DD the timeSpentToday counter belongs to
   lastVisitTime: z.number().nullable(),
   visitsByDate: z.record(z.string(), z.number()).default({}),
 })
@@ -27,6 +28,7 @@ export const StatsSchema = z.object({
   bySite: z.record(z.string(), SiteStatsSchema).default({}),
   byDate: z.record(z.string(), z.number()).default({}), // Total blocks per day
   minutesByDate: z.record(z.string(), z.number()).default({}), // Total focus minutes per day
+  frictionBreaksByDate: z.record(z.string(), z.number()).default({}), // Friction-mode breaks per day (escalation)
 })
 
 // Type exports
@@ -125,17 +127,9 @@ export async function recordBlock(host: string): Promise<Stats | null> {
     stats.bySite[host].blocks += 1
     stats.bySite[host].lastBlocked = now
 
-    // Update visit counters for conditional rules
-    const siteStats = stats.bySite[host]
-    if (!siteStats.visitsByDate || typeof siteStats.visitsByDate !== 'object') {
-      siteStats.visitsByDate = {}
-    }
-    if (!siteStats.visitsByDate[today]) {
-      siteStats.visitsByDate[today] = 0
-    }
-    siteStats.visitsByDate[today] += 1
-    siteStats.visitsToday = siteStats.visitsByDate[today]
-    siteStats.lastVisitTime = now
+    // NOTE: visit counters (visitsByDate/visitsToday) are owned by
+    // recordVisitAttempt only. Incrementing them here too double-counted every
+    // conditional-rule visit (attempt + block), tripping VISITS_PER_DAY early.
 
     // Update daily statistics
     if (!stats.byDate[today]) {
@@ -248,11 +242,20 @@ export async function addTimeSpent(host: string, minutes: number): Promise<Stats
       return null // Site not tracked
     }
 
+    const today = new Date().toISOString().split('T')[0]
+
+    // Reset the daily counter when the tracked day rolls over. Without this the
+    // counter carried across days forever, so a TIME_LIMIT rule that was hit once
+    // kept the site blocked permanently.
+    if (stats.bySite[host].timeSpentDate !== today) {
+      stats.bySite[host].timeSpentToday = 0
+      stats.bySite[host].timeSpentDate = today
+    }
+
     // Add time to today's total
     stats.bySite[host].timeSpentToday += minutes
 
     // Add time to global daily total
-    const today = new Date().toISOString().split('T')[0]
     if (!stats.minutesByDate) stats.minutesByDate = {}
     if (!stats.minutesByDate[today]) stats.minutesByDate[today] = 0
     stats.minutesByDate[today] += minutes
@@ -459,6 +462,54 @@ export async function getBlocksToday(): Promise<number> {
 }
 
 /**
+ * Record a friction-mode "break" — a successfully passed challenge that let the
+ * user bypass protection (stop a session, remove a site, disable protection).
+ * Counted per day so difficulty escalates within a day but resets each dawn.
+ * @returns Number of breaks recorded today (including this one) or null on error
+ */
+export async function recordFrictionBreak(): Promise<number | null> {
+  try {
+    const today = new Date().toISOString().split('T')[0]
+
+    const data = await browser.storage.local.get(STORAGE_KEYS.BLOCK_STATS)
+    let stats = data[STORAGE_KEYS.BLOCK_STATS] as Stats | undefined
+
+    if (!stats || typeof stats !== 'object') {
+      await initStats()
+      const freshData = await browser.storage.local.get(STORAGE_KEYS.BLOCK_STATS)
+      stats = freshData[STORAGE_KEYS.BLOCK_STATS] as Stats
+    }
+
+    if (!stats.frictionBreaksByDate || typeof stats.frictionBreaksByDate !== 'object') {
+      stats.frictionBreaksByDate = {}
+    }
+    stats.frictionBreaksByDate[today] = (stats.frictionBreaksByDate[today] || 0) + 1
+
+    await browser.storage.local.set({ [STORAGE_KEYS.BLOCK_STATS]: stats })
+    return stats.frictionBreaksByDate[today]
+  } catch (err) {
+    console.error('[Stats] Error recording friction break:', err)
+    return null
+  }
+}
+
+/**
+ * Get the number of friction-mode breaks recorded today (escalation level source)
+ * @returns Number of breaks today (0 if none/error)
+ */
+export async function getFrictionBreaksToday(): Promise<number> {
+  try {
+    const stats = await getStats()
+    if (!stats || !stats.frictionBreaksByDate) return 0
+    const today = new Date().toISOString().split('T')[0]
+    return stats.frictionBreaksByDate[today] || 0
+  } catch (err) {
+    console.error('[Stats] Error getting friction breaks today:', err)
+    return 0
+  }
+}
+
+/**
  * Clean up old statistics data (older than specified days)
  * @param daysToKeep - Number of days of history to keep
  * @returns true if successful
@@ -490,6 +541,17 @@ export async function cleanupOldStats(daysToKeep = 90): Promise<boolean> {
         }
       }
       stats.minutesByDate = newMinutesByDate
+    }
+
+    // Clean up frictionBreaksByDate
+    if (stats.frictionBreaksByDate) {
+      const newFrictionByDate: Record<string, number> = {}
+      for (const [date, count] of Object.entries(stats.frictionBreaksByDate)) {
+        if (date >= cutoffStr) {
+          newFrictionByDate[date] = count
+        }
+      }
+      stats.frictionBreaksByDate = newFrictionByDate
     }
 
     // Clean up visitsByDate in each site

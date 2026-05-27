@@ -82,13 +82,17 @@ export function shouldBlockByConditionalRules(
           siteStats && siteStats.visitsByDate && siteStats.visitsByDate[today]
             ? siteStats.visitsByDate[today]
             : 0
-        if (visitsToday >= rule.maxVisits) return true
+        // Allow exactly maxVisits visits per day; block the one after.
+        if (visitsToday > rule.maxVisits) return true
         break
       }
 
       case ConditionType.TIME_LIMIT: {
         if (!rule.maxTimeMinutes) break
-        const timeSpentToday = siteStats && siteStats.timeSpentToday ? siteStats.timeSpentToday : 0
+        // Only honor the counter if it belongs to today. Otherwise yesterday's
+        // accumulated minutes would keep blocking until the next minute-tick reset.
+        const counterIsToday = !siteStats?.timeSpentDate || siteStats.timeSpentDate === today
+        const timeSpentToday = counterIsToday && siteStats?.timeSpentToday ? siteStats.timeSpentToday : 0
         if (timeSpentToday >= rule.maxTimeMinutes) return true
         break
       }

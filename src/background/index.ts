@@ -16,6 +16,29 @@ import { isScheduleActive } from '../shared/domain/schedule'
 import { shouldBlockByConditionalRules } from '../shared/domain/conditional-rules'
 import { getSiteStats, recordVisitAttempt } from '../shared/domain/stats'
 
+// A single navigation can surface through several events (onUpdated firing
+// `complete` more than once, plus onHistoryStateUpdated for SPAs). Without a
+// guard each one calls recordVisitAttempt, inflating the per-day visit counter
+// so VISITS_PER_DAY rules trip far too early. Record at most one visit per
+// tab+host within this window.
+const VISIT_DEDUPE_MS = 2000
+const lastVisitRecord = new Map<string, number>()
+
+async function recordVisitOnce(tabId: number, hostname: string): Promise<void> {
+  const key = `${tabId}:${hostname}`
+  const now = Date.now()
+  const last = lastVisitRecord.get(key)
+  if (last && now - last < VISIT_DEDUPE_MS) return
+  lastVisitRecord.set(key, now)
+  // Keep the map from growing unbounded across a long-lived service worker.
+  if (lastVisitRecord.size > 200) {
+    for (const [k, t] of lastVisitRecord) {
+      if (now - t >= VISIT_DEDUPE_MS) lastVisitRecord.delete(k)
+    }
+  }
+  await recordVisitAttempt(hostname)
+}
+
 /**
  * Extension installation/update handler
  */
@@ -212,8 +235,8 @@ async function handleTabUpdate(
 
       // For sites with conditional rules, check if we should block
       if (site.conditionalRules && site.conditionalRules.length > 0) {
-        // Record visit attempt
-        await recordVisitAttempt(hostname)
+        // Record visit attempt (deduped against repeated/SPA events)
+        await recordVisitOnce(tabId, hostname)
 
         // Check if should block
         const siteStats = await getSiteStats(hostname)
@@ -374,8 +397,8 @@ async function handleHistoryStateUpdate(
 
       // For sites with conditional rules, check if we should block
       if (site.conditionalRules && site.conditionalRules.length > 0) {
-        // Record visit attempt
-        await recordVisitAttempt(hostname)
+        // Record visit attempt (deduped against repeated/SPA events)
+        await recordVisitOnce(details.tabId, hostname)
 
         // Check if should block
         const siteStats = await getSiteStats(hostname)

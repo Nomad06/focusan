@@ -53,29 +53,20 @@ async function buildRules() {
         condition: { urlFilter: '*', resourceTypes: ['main_frame' as const] },
       })
 
-      // 2. Allow Focus Session Sites (Priority 2)
-      // In whitelist mode, sitesToBlock acts as the "Allowed" list
-      for (const host of focusSessionSites) {
+      // 2 & 3. Allow listed sites (Priority 2). In whitelist mode sitesToBlock
+      // acts as the "Allowed" list; temp whitelist ("I need 5 mins") adds more.
+      const allowedHosts = [...focusSessionSites, ...tempWhitelist.map(e => e.host)]
+      for (const host of allowedHosts) {
+        if (ruleIdCounter > DNR_RULE_IDS.MAX) {
+          console.warn('[DNR] Exceeded max rule count (whitelist), skipping:', host)
+          break
+        }
         rules.push({
           id: ruleIdCounter++,
           priority: 2,
           action: { type: 'allow' as const },
           condition: {
             regexFilter: hostToRegex(host),
-            resourceTypes: ['main_frame' as const],
-          },
-        })
-      }
-
-      // 3. Allow Temporary Whitelist Sites (Priority 2)
-      // Users might have used "I need 5 mins" feature
-      for (const entry of tempWhitelist) {
-        rules.push({
-          id: ruleIdCounter++,
-          priority: 2,
-          action: { type: 'allow' as const },
-          condition: {
-            regexFilter: hostToRegex(entry.host),
             resourceTypes: ['main_frame' as const],
           },
         })
@@ -224,8 +215,12 @@ async function runRebuild(): Promise<boolean> {
         addRules: newRules,
       })
 
-      // Update badge with count
-      const activeCount = newRules.length
+      // Update badge with count. Exclude the universal "block everything" rule
+      // used by whitelist mode (urlFilter '*') so the badge reflects the number
+      // of specifically-blocked sites, not the catch-all.
+      const activeCount = newRules.filter(
+        r => !(r.action.type === 'block' && (r.condition as any).urlFilter === '*')
+      ).length
       await browser.action.setBadgeText({
         text: activeCount > 0 ? String(activeCount) : '',
       })

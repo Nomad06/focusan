@@ -316,8 +316,15 @@ export async function getCurrentSession(): Promise<FocusSession | null> {
 export async function getRemainingTime(): Promise<number> {
   try {
     const session = await getCurrentSession()
-    if (!session || session.state === SessionState.IDLE || session.state === SessionState.PAUSED) {
+    if (!session || session.state === SessionState.IDLE) {
       return 0
+    }
+
+    // While paused the clock is frozen: endTime hasn't been pushed forward yet,
+    // so the remaining time is measured from when the pause began.
+    if (session.state === SessionState.PAUSED) {
+      const reference = session.pausedAt ?? Date.now()
+      return Math.max(0, Math.floor((session.endTime - reference) / 1000))
     }
 
     const now = Date.now()

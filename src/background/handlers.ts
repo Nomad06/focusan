@@ -258,6 +258,11 @@ async function handlePauseFocusSession(): Promise<
   MessageResponse<MessageType.PAUSE_FOCUS_SESSION>
 > {
   await pauseFocusSession()
+
+  // Rebuild so blocking state matches the paused session immediately, instead of
+  // drifting until the next periodic rebuild (mirror of resume, which rebuilds).
+  await rebuildRules()
+
   return createSuccessResponse()
 }
 

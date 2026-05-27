@@ -41,6 +41,23 @@ export type DaySchedule = z.infer<typeof DayScheduleSchema>
 export type Schedule = z.infer<typeof ScheduleSchema>
 
 /**
+ * Test whether a minute-of-day falls within [start, end).
+ * End is exclusive (at exactly `end` the range is over).
+ * Supports overnight ranges where start > end (e.g. 22:00 → 06:00).
+ * start === end is treated as an empty range (never active).
+ *
+ * @param current - Minutes since midnight to test
+ * @param start - Range start (minutes since midnight)
+ * @param end - Range end (minutes since midnight)
+ */
+export function isTimeInRange(current: number, start: number, end: number): boolean {
+  if (start === end) return false
+  if (start < end) return current >= start && current < end
+  // Overnight wrap: active from start to midnight, then midnight to end.
+  return current >= start || current < end
+}
+
+/**
  * Check if blocking is active according to schedule
  * @param schedule - Schedule configuration
  * @returns true if site should be blocked right now
@@ -73,7 +90,7 @@ export function isScheduleActive(schedule: Schedule | null | undefined): boolean
       const workStart = schedule.workHours?.start ? parseTime(schedule.workHours.start) : 9 * 60
       const workEnd = schedule.workHours?.end ? parseTime(schedule.workHours.end) : 18 * 60
       const isWorkDay = currentDay >= 1 && currentDay <= 5 // Mon-Fri
-      return isWorkDay && currentTime >= workStart && currentTime <= workEnd
+      return isWorkDay && isTimeInRange(currentTime, workStart, workEnd)
     }
 
     case ScheduleMode.WEEKENDS:
@@ -91,7 +108,7 @@ export function isScheduleActive(schedule: Schedule | null | undefined): boolean
 
       // Check if current day is in the list
       const isCustomDay = schedule.customDays.includes(currentDay)
-      const isCustomTime = currentTime >= customStart && currentTime <= customEnd
+      const isCustomTime = isTimeInRange(currentTime, customStart, customEnd)
 
       return isCustomDay && isCustomTime
     }
@@ -115,7 +132,7 @@ export function isScheduleActive(schedule: Schedule | null | undefined): boolean
       if (daySchedule.timeRange) {
         const dayStart = parseTime(daySchedule.timeRange.start || '00:00')
         const dayEnd = parseTime(daySchedule.timeRange.end || '23:59')
-        return currentTime >= dayStart && currentTime <= dayEnd
+        return isTimeInRange(currentTime, dayStart, dayEnd)
       }
 
       return true // Default: block
@@ -289,8 +306,9 @@ export function validateSchedule(schedule: unknown): ValidationResult {
   if (validSchedule.mode === ScheduleMode.WORK_HOURS && validSchedule.workHours) {
     const start = parseTime(validSchedule.workHours.start)
     const end = parseTime(validSchedule.workHours.end)
-    if (start >= end) {
-      return { valid: false, error: 'Work hours: start time must be before end time' }
+    // start > end is allowed: it means an overnight range (e.g. 22:00–06:00).
+    if (start === end) {
+      return { valid: false, error: 'Work hours: start and end time must differ' }
     }
   }
 
@@ -301,8 +319,9 @@ export function validateSchedule(schedule: unknown): ValidationResult {
     if (validSchedule.customTime) {
       const start = parseTime(validSchedule.customTime.start)
       const end = parseTime(validSchedule.customTime.end)
-      if (start >= end) {
-        return { valid: false, error: 'Custom time: start time must be before end time' }
+      // start > end is allowed: overnight range (e.g. 22:00–06:00).
+      if (start === end) {
+        return { valid: false, error: 'Custom time: start and end time must differ' }
       }
     }
   }
