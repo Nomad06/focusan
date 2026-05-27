@@ -6,6 +6,7 @@
 import { z } from 'zod'
 import browser from 'webextension-polyfill'
 import { STORAGE_KEYS } from '../constants'
+import { localDateKey, localDateKeyDaysAgo } from '../utils/date'
 
 // Zod schemas for runtime validation
 export const SiteStatsSchema = z.object({
@@ -69,7 +70,7 @@ export async function initStats(): Promise<void> {
 export async function recordBlock(host: string): Promise<Stats | null> {
   try {
     const now = Date.now()
-    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+    const today = localDateKey() // YYYY-MM-DD
 
     const data = await browser.storage.local.get(STORAGE_KEYS.BLOCK_STATS)
     let stats = data[STORAGE_KEYS.BLOCK_STATS] as Stats | undefined
@@ -143,9 +144,7 @@ export async function recordBlock(host: string): Promise<Stats | null> {
     type StatsWithStreak = Stats & { streakLastDay?: string | null }
     const streakStats = stats as StatsWithStreak
     if (streakStats.streakLastDay !== today) {
-      const yesterday = new Date()
-      yesterday.setUTCDate(yesterday.getUTCDate() - 1)
-      const yesterdayStr = yesterday.toISOString().split('T')[0]
+      const yesterdayStr = localDateKeyDaysAgo(1)
 
       if (streakStats.streakLastDay === yesterdayStr) {
         stats.streakDays = (stats.streakDays || 0) + 1
@@ -178,7 +177,7 @@ export async function recordBlock(host: string): Promise<Stats | null> {
 export async function recordVisitAttempt(host: string): Promise<Stats | null> {
   try {
     const now = Date.now()
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateKey()
 
     const data = await browser.storage.local.get(STORAGE_KEYS.BLOCK_STATS)
     let stats: Stats = data[STORAGE_KEYS.BLOCK_STATS] as Stats
@@ -242,7 +241,7 @@ export async function addTimeSpent(host: string, minutes: number): Promise<Stats
       return null // Site not tracked
     }
 
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateKey()
 
     // Reset the daily counter when the tracked day rolls over. Without this the
     // counter carried across days forever, so a TIME_LIMIT rule that was hit once
@@ -285,7 +284,7 @@ export async function addFocusMinutes(minutes: number): Promise<Stats | null> {
       stats = freshData[STORAGE_KEYS.BLOCK_STATS] as Stats
     }
 
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateKey()
     if (!stats.minutesByDate) stats.minutesByDate = {}
     if (!stats.minutesByDate[today]) stats.minutesByDate[today] = 0
     stats.minutesByDate[today] += minutes
@@ -453,7 +452,7 @@ export async function getBlocksToday(): Promise<number> {
       return 0
     }
 
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateKey()
     return stats.byDate[today] || 0
   } catch (err) {
     console.error('[Stats] Error getting blocks today:', err)
@@ -469,7 +468,7 @@ export async function getBlocksToday(): Promise<number> {
  */
 export async function recordFrictionBreak(): Promise<number | null> {
   try {
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateKey()
 
     const data = await browser.storage.local.get(STORAGE_KEYS.BLOCK_STATS)
     let stats = data[STORAGE_KEYS.BLOCK_STATS] as Stats | undefined
@@ -501,7 +500,7 @@ export async function getFrictionBreaksToday(): Promise<number> {
   try {
     const stats = await getStats()
     if (!stats || !stats.frictionBreaksByDate) return 0
-    const today = new Date().toISOString().split('T')[0]
+    const today = localDateKey()
     return stats.frictionBreaksByDate[today] || 0
   } catch (err) {
     console.error('[Stats] Error getting friction breaks today:', err)
@@ -519,9 +518,7 @@ export async function cleanupOldStats(daysToKeep = 90): Promise<boolean> {
     const stats = await getStats()
     if (!stats) return false
 
-    const cutoffDate = new Date()
-    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
-    const cutoffStr = cutoffDate.toISOString().split('T')[0]
+    const cutoffStr = localDateKeyDaysAgo(daysToKeep)
 
     // Clean up byDate
     const newByDate: Record<string, number> = {}

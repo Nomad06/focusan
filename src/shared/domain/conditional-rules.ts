@@ -5,6 +5,7 @@
 
 import { z } from 'zod'
 import { t } from '../i18n'
+import { localDateKey } from '../utils/date'
 import type { SiteStats } from './stats'
 
 // Condition types enum
@@ -66,7 +67,7 @@ export function shouldBlockByConditionalRules(
   }
 
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
+  const today = localDateKey(now)
 
   // Evaluate every enabled rule. Block if ANY rule's limit is exceeded.
   // Rules with missing config are ignored.

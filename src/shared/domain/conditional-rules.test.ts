@@ -1,13 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { shouldBlockByConditionalRules, ConditionType } from './conditional-rules'
+import { localDateKey, localDateKeyDaysAgo } from '../utils/date'
 import type { SiteStats } from './stats'
 
-const today = new Date().toISOString().split('T')[0]
-const yesterday = (() => {
-  const d = new Date()
-  d.setUTCDate(d.getUTCDate() - 1)
-  return d.toISOString().split('T')[0]
-})()
+const today = localDateKey()
+const yesterday = localDateKeyDaysAgo(1)
 
 function makeStats(partial: Partial<SiteStats>): SiteStats {
   return {

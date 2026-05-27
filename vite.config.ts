@@ -19,6 +19,12 @@ export default defineConfig({
       ]
     })
   ],
+  // Drop noisy diagnostic logging from production bundles while keeping
+  // console.warn / console.error for real problem reporting. Marking these
+  // calls "pure" lets esbuild tree-shake them (their return value is unused).
+  esbuild: {
+    pure: ['console.log', 'console.info', 'console.debug'],
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
