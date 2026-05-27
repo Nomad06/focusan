@@ -367,6 +367,42 @@ const App: React.FC = () => {
                 {t('bushido.welcome.finish')}
               </p>
 
+              {/* ─── Permission covenant ─── */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.7 }}
+                className="kintsugi-card w-full max-w-md mb-12 p-6 text-left"
+              >
+                <div className="text-[10px] uppercase tracking-[0.4em] mb-1" style={{ color: 'var(--kinpaku)' }}>
+                  {t('bushido.welcome.permissionsTitle')}
+                </div>
+                <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--nezumi)' }}>
+                  {t('bushido.welcome.permissionsIntro')}
+                </p>
+                <ul className="space-y-2 text-xs" style={{ color: 'var(--text)' }}>
+                  {[
+                    t('bushido.welcome.permCanBlock'),
+                    t('bushido.welcome.permCanTabs'),
+                    t('bushido.welcome.permCanSchedule'),
+                  ].map((line, i) => (
+                    <li key={`can-${i}`} className="flex items-start gap-2">
+                      <span style={{ color: 'var(--kinpaku)' }}>許</span>
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                  {[
+                    t('bushido.welcome.permCannotRead'),
+                    t('bushido.welcome.permCannotSend'),
+                  ].map((line, i) => (
+                    <li key={`cannot-${i}`} className="flex items-start gap-2" style={{ color: 'var(--nezumi)' }}>
+                      <span style={{ color: 'var(--akabeni)' }}>禁</span>
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+
               <button
                 onClick={handleFinish}
                 disabled={loading}

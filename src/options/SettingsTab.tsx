@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { messagingClient } from '../shared/messaging/client'
-import { ShieldIcon, FlameIcon } from '../shared/components/Icons'
+import { ShieldIcon, SealIcon } from '../shared/components/Icons'
 import { t } from '../shared/i18n'
 import { getCurrentTheme, setTheme } from '../shared/themes'
 
@@ -59,14 +59,33 @@ export const SettingsTab: React.FC = () => {
           {/* Modes Section */}
           <div className="grid grid-cols-1 gap-6">
 
-            {/* Challenge Mode */}
-            <div className="group p-6 rounded-xl border border-gold-accent/20 bg-gradient-to-br from-gold-accent/5 to-transparent shadow-sm hover:shadow-md hover:border-gold-accent/40 transition-all duration-300">
+            {/* Friction Mode — Seal of Discipline */}
+            <div
+              className="group p-6 transition-all duration-300"
+              style={{
+                borderRadius: 'var(--radius)',
+                border: `1px solid ${challengeModeEnabled ? 'var(--accent)' : 'var(--border)'}`,
+                background: challengeModeEnabled
+                  ? 'linear-gradient(135deg, rgba(184,46,46,0.08), transparent)'
+                  : 'transparent',
+              }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-4">
-                  <div className="p-2.5 bg-gold-accent/10 text-gold-accent rounded-xl group-hover:scale-110 transition-transform">
-                    <FlameIcon size={22} strokeWidth={1.5} />
+                  <div
+                    className="p-2.5 group-hover:scale-110 transition-transform"
+                    style={{
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'rgba(184,46,46,0.08)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--accent)',
+                    }}
+                  >
+                    <SealIcon size={22} strokeWidth={1.5} kanji="封" />
                   </div>
-                  <h4 className="font-serif text-lg text-sumi-black tracking-wide">Friction Mode</h4>
+                  <h4 className="font-serif text-lg tracking-wide" style={{ color: 'var(--text)' }}>
+                    {t('friction.settingsTitle')}
+                  </h4>
                 </div>
                 <button
                   onClick={() => {
@@ -74,16 +93,19 @@ export const SettingsTab: React.FC = () => {
                     setChallengeModeEnabled(newState)
                     messagingClient.setChallengeMode(newState)
                   }}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gold-accent focus:ring-offset-2 shadow-inner ${challengeModeEnabled ? 'bg-gold-accent' : 'bg-gray-200'}`}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-inner"
+                  style={{
+                    background: challengeModeEnabled ? 'var(--accent)' : 'var(--border)',
+                  }}
+                  aria-pressed={challengeModeEnabled}
                 >
                   <span
                     className={`${challengeModeEnabled ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full toggle-thumb transition-transform shadow`}
                   />
                 </button>
               </div>
-              <p className="text-sm text-sumi-gray leading-relaxed pl-14 font-light">
-                Adds annoying challenges (math, typing) before allowing you to stop sessions or
-                edit settings. Good for "pre-commitment".
+              <p className="text-sm leading-relaxed pl-14 font-light" style={{ color: 'var(--muted)' }}>
+                {t('friction.settingsDescription')}
               </p>
             </div>
 
@@ -152,6 +174,45 @@ export const SettingsTab: React.FC = () => {
             )
           })}
         </div>
+      </div>
+
+      {/* ─── Permissions & privacy covenant ─── */}
+      <div className="washi-card p-8 border border-border/60 shadow-[var(--shadow-lg)]">
+        <div className="flex items-start gap-6 border-b border-border/40 pb-6 mb-6">
+          <div className="w-16 h-16 rounded-2xl bg-accent/5 border border-accent/20 flex items-center justify-center text-accent shadow-sm">
+            <ShieldIcon size={32} strokeWidth={1.5} />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-2xl font-serif tracking-tight mb-1" style={{ color: 'var(--text)' }}>
+              {t('bushido.welcome.permissionsTitle')}
+            </h3>
+            <p className="text-sm font-light leading-relaxed" style={{ color: 'var(--muted)' }}>
+              {t('bushido.welcome.permissionsIntro')}
+            </p>
+          </div>
+        </div>
+
+        <ul className="space-y-3 text-sm">
+          {[
+            t('bushido.welcome.permCanBlock'),
+            t('bushido.welcome.permCanTabs'),
+            t('bushido.welcome.permCanSchedule'),
+          ].map((line, i) => (
+            <li key={`can-${i}`} className="flex items-start gap-3" style={{ color: 'var(--text)' }}>
+              <span className="font-serif" style={{ color: 'var(--kinpaku)' }}>許</span>
+              <span className="font-light">{line}</span>
+            </li>
+          ))}
+          {[
+            t('bushido.welcome.permCannotRead'),
+            t('bushido.welcome.permCannotSend'),
+          ].map((line, i) => (
+            <li key={`cannot-${i}`} className="flex items-start gap-3" style={{ color: 'var(--muted)' }}>
+              <span className="font-serif" style={{ color: 'var(--accent)' }}>禁</span>
+              <span className="font-light">{line}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </motion.div>
   )
