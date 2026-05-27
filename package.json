@@ -12,7 +12,8 @@
     "test:coverage": "vitest --coverage",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "screenshots": "npm run build && node scripts/screenshots.mjs"
   },
   "keywords": [
     "chrome-extension",
