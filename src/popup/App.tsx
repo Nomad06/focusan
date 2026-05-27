@@ -463,12 +463,12 @@ const App: React.FC = () => {
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={handleStartFocusSession}
-                    aria-label={t('bushido.engage')}
+                    aria-label={t('focusSession.engage')}
                     className="btn primary w-full lg"
                     style={{ paddingTop: 14, paddingBottom: 14 }}
                   >
                     <span className="font-serif" style={{ fontSize: 16, marginRight: 6 }}>戦</span>
-                    {t('bushido.engage')}
+                    {t('focusSession.engage')}
                   </motion.button>
                 )}
               </motion.div>
@@ -636,7 +636,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
         <div className="flex flex-col gap-5 flex-1 overflow-y-auto pr-1 custom-scrollbar">
           {/* Mode Toggle */}
           <div className="washi-card p-3 border border-border flex items-center justify-between shadow-sm">
-            <span className="font-serif text-sm font-medium text-sumi-black">Mode</span>
+            <span className="font-serif text-sm font-medium text-sumi-black">{t('focusSession.mode')}</span>
             <div className="flex bg-black/5 p-1 rounded-lg">
               <button
                 onClick={() => setMode('blocklist')}
@@ -645,7 +645,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
                   : 'text-sumi-gray hover:text-sumi-black'
                   }`}
               >
-                Block
+                {t('focusSession.modeBlock')}
               </button>
               <button
                 onClick={() => setMode('whitelist')}
@@ -654,7 +654,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
                   : 'text-sumi-gray hover:text-sumi-black'
                   }`}
               >
-                Allow
+                {t('focusSession.modeAllow')}
               </button>
             </div>
           </div>
@@ -662,7 +662,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
           {/* Duration Input */}
           <div className="washi-card p-4 border border-border flex items-center gap-4 shadow-sm">
             <label className="font-medium text-sm flex-1 text-sumi-black font-serif">
-              Duration (min)
+              {t('focusSession.durationMin')}
             </label>
             <input
               type="number"
@@ -677,13 +677,13 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
           {/* Main sites list */}
           <fieldset className="flex flex-col gap-2 border-0 p-0 m-0">
             <legend className="font-semibold text-[10px] text-sumi-gray uppercase tracking-widest pl-1">
-              {mode === 'whitelist' ? 'Allowed Sites' : t('focusSession.mainSites')}
+              {mode === 'whitelist' ? t('focusSession.allowedSites') : t('focusSession.mainSites')}
             </legend>
             <div className="washi-card border border-border p-2 max-h-48 overflow-y-auto">
               {sites.length === 0 ? (
                 <div className="text-sumi-gray text-center p-4 text-xs italic">
                   {mode === 'whitelist'
-                    ? 'Add sites you want to ALLOW access to.'
+                    ? t('focusSession.allowHint')
                     : t('focusSession.noSites')}
                 </div>
               ) : (
@@ -712,7 +712,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
           {/* Additional sites */}
           <div className="flex flex-col gap-2">
             <label className="font-semibold text-[10px] text-sumi-gray uppercase tracking-widest pl-1">
-              {mode === 'whitelist' ? 'More Allowed Sites' : t('focusSession.additionalSites')}
+              {mode === 'whitelist' ? t('focusSession.moreAllowedSites') : t('focusSession.additionalSites')}
             </label>
             <div className="flex gap-2">
               <input
@@ -721,7 +721,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
                 value={newSiteInput}
                 onChange={e => setNewSiteInput(e.target.value)}
                 onKeyPress={e => e.key === 'Enter' && handleAddAdditionalSite()}
-                placeholder="example.com"
+                placeholder={t('focusSession.allowedPlaceholder')}
               />
               <button className="btn secondary text-xs px-4" onClick={handleAddAdditionalSite}>
                 {t('common.add')}

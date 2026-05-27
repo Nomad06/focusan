@@ -2,6 +2,8 @@ import React, { useMemo } from 'react'
 
 import { format, subDays, eachDayOfInterval, startOfWeek } from 'date-fns'
 
+import { t } from '../i18n'
+
 interface HeatmapProps {
   data: Record<string, number> // YYYY-MM-DD -> minutes
   color?: string
@@ -151,7 +153,7 @@ const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono text-sumi-gray mt-5 justify-end uppercase tracking-widest opacity-80">
-          <span>Less</span>
+          <span>{t('stats.less')}</span>
           <div className="flex gap-[3px]">
             <div className="w-[11px] h-[11px] rounded-[2px] bg-black/5"></div>
             <div className="w-[11px] h-[11px] rounded-[2px] bg-nissho-orange/30"></div>
@@ -159,7 +161,7 @@ const Heatmap: React.FC<HeatmapProps> = ({ data }) => {
             <div className="w-[11px] h-[11px] rounded-[2px] bg-nissho-orange/70"></div>
             <div className="w-[11px] h-[11px] rounded-[2px] bg-nissho-orange"></div>
           </div>
-          <span>More</span>
+          <span>{t('stats.more')}</span>
         </div>
       </div>
 

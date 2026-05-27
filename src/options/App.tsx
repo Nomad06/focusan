@@ -285,8 +285,8 @@ const App: React.FC = () => {
       // Use ChallengeModal for friction
       setPendingAction({
         type: 'delete',
-        title: 'Challenge Mode',
-        description: 'Complete this challenge to proceed.',
+        title: t('options.challengeModeTitle'),
+        description: t('options.challengeModeDescription'),
         onConfirm: async () => {
           await action()
           setPendingAction(null)
