@@ -62,19 +62,19 @@ handling matches disclosures.
 **Name:** Focusan — 集中
 
 **Short description (≤132 chars):**
-> Bushidō for your browser. Cut distractions with zen calm and samurai resolve —
-> schedules, daily limits, Pomodoro rituals.
+> Bushidō for your browser. Cut distractions with calm focus and samurai resolve
+> — schedules, daily limits, Pomodoro sessions.
 
 **Detailed description:**
 > Focusan — 集中 — turns distraction-blocking into a quiet discipline inspired
-> by Bushidō. Zen calm on the surface, samurai resolve underneath.
+> by Bushidō. Composed on the surface, resolute underneath.
 >
 > • Cut any site cleanly — blocked at the network layer, not just hidden.
 > • Schedule your hours — work hours, weekdays, weekends, custom day/time rules,
 >   overnight ranges.
 > • Daily limits — cap visits or minutes per site; Focusan steps in only at the
 >   line.
-> • Focus rituals (Pomodoro) — blocklist or whitelist mode, calm timer, clear
+> • Pomodoro focus sessions — blocklist or whitelist mode, calm timer, clear
 >   bell.
 > • Temporary allowances — a short, deliberate exception when you actually need
 >   one.

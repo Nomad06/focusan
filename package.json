@@ -2,7 +2,7 @@
   "name": "focusan",
   "version": "2.0.0",
   "type": "module",
-  "description": "Bushidō for your browser. Cut distractions with zen calm and samurai resolve — schedules, daily limits, Pomodoro rituals.",
+  "description": "Bushidō for your browser. Cut distractions with calm focus and samurai resolve — schedules, daily limits, Pomodoro sessions.",
   "scripts": {
     "dev": "vite build --watch --mode development",
     "build": "tsc && vite build",

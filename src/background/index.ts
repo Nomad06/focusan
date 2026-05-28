@@ -63,7 +63,7 @@ async function handleInstalled(details: browser.Runtime.OnInstalledDetailsType):
           type: 'basic',
           iconUrl: browser.runtime.getURL('icons/icon128.png'),
           title: 'Welcome to Focusan',
-          message: 'Your journey to digital zen begins now.',
+          message: 'The path of focus begins now.',
         })
       } catch (notifErr) {
         console.debug('[Background] Failed to show welcome notification:', notifErr)
