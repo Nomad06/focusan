@@ -1,5 +1,5 @@
 /**
- * Site categorization system for Brain Defender
+ * Site categorization system for Focusan
  * Allows users to organize blocked sites into categories
  */
 

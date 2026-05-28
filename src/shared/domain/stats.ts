@@ -1,5 +1,5 @@
 /**
- * Statistics tracking system for Brain Defender
+ * Statistics tracking system for Focusan
  * Tracks block attempts, streaks, per-site stats, and daily statistics
  */
 

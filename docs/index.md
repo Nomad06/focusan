@@ -76,7 +76,7 @@ The full source code is public. Verify the privacy claims by reviewing the repos
 - Storage operations: `src/shared/storage/storage.ts`
 - Background service worker: `src/background/index.ts`
 
-Repository: <https://github.com/Nomad06/brain-defender>
+Repository: <https://github.com/Nomad06/focusan>
 
 ## Security Practices
 
@@ -101,7 +101,7 @@ Material changes will be reflected by bumping the **Last Updated** date and the 
 
 ## Contact
 
-Questions or concerns: open an issue at <https://github.com/Nomad06/brain-defender/issues>.
+Questions or concerns: open an issue at <https://github.com/Nomad06/focusan/issues>.
 
 ## Compliance
 

@@ -1,5 +1,5 @@
 /**
- * Popup React App for Brain Defender
+ * Popup React App for Focusan
  * High-end Japanese Zen Redesign
  */
 

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Brain Defender will be documented in this file.
+All notable changes to Focusan will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -26,6 +26,6 @@ See [README.md](README.md#roadmap) for planned features in upcoming versions.
 
 ## Links
 - [Chrome Web Store](https://chrome.google.com/webstore) *(coming soon)*
-- [GitHub Repository](https://github.com/nomad06/brain-defender)
-- [Report Issues](https://github.com/nomad06/brain-defender/issues)
+- [GitHub Repository](https://github.com/nomad06/focusan)
+- [Report Issues](https://github.com/nomad06/focusan/issues)
 - [Privacy Policy](PRIVACY.md)

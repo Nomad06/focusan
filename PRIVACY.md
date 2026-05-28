@@ -145,12 +145,12 @@ Since all data is local and under your control, you can exercise these rights di
 
 For questions, concerns, or requests regarding this privacy policy:
 
-- **GitHub Issues**: [Report privacy concerns](https://github.com/[your-username]/brain-defender/issues)
+- **GitHub Issues**: [Report privacy concerns](https://github.com/Nomad06/focusan/issues)
 - **Email**: [your-email@example.com]
 
 ## Compliance
 
-Brain Defender is designed to comply with:
+Focusan is designed to comply with:
 - ✅ **GDPR** (General Data Protection Regulation)
 - ✅ **CCPA** (California Consumer Privacy Act)
 - ✅ **Chrome Web Store Developer Policies**
@@ -158,8 +158,8 @@ Brain Defender is designed to comply with:
 
 ## Consent
 
-By installing and using Brain Defender, you consent to the data practices described in this privacy policy. You can withdraw consent at any time by uninstalling the extension.
+By installing and using Focusan, you consent to the data practices described in this privacy policy. You can withdraw consent at any time by uninstalling the extension.
 
 ---
 
-**Summary**: Brain Defender is a privacy-first extension. All data stays on your device, under your control. We don't track, collect, or share anything.
+**Summary**: Focusan is a privacy-first extension. All data stays on your device, under your control. We don't track, collect, or share anything.

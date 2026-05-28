@@ -1,5 +1,5 @@
 /**
- * Domain and URL utilities for Brain Defender
+ * Domain and URL utilities for Focusan
  * Handles domain normalization, URL validation, and regex pattern generation
  */
 

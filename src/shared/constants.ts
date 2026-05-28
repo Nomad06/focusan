@@ -1,5 +1,5 @@
 /**
- * Core constants for Brain Defender extension
+ * Core constants for Focusan extension
  * These storage keys must remain unchanged for backward compatibility
  */
 

@@ -1,5 +1,5 @@
 /**
- * Unified storage abstraction layer for Brain Defender
+ * Unified storage abstraction layer for Focusan
  * Provides type-safe access to chrome.storage with validation
  */
 

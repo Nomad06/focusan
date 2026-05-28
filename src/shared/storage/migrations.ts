@@ -1,5 +1,5 @@
 /**
- * Data migration system for Brain Defender
+ * Data migration system for Focusan
  * Handles versioned migrations of stored data
  */
 

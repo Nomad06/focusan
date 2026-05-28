@@ -258,7 +258,7 @@ Schedule strictness change:
 
 ## Philosophy
 
-The Smart Challenge System embodies Brain Defender's core philosophy:
+The Smart Challenge System embodies Focusan's core philosophy:
 
 > **Make it easy to protect yourself, hard to unprotect yourself.**
 

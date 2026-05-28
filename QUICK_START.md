@@ -1,4 +1,4 @@
-# Brain Defender v2.0 - Quick Start Guide
+# Focusan v2.0 - Quick Start Guide
 
 ## Installation (5 minutes)
 
@@ -190,7 +190,7 @@ npm run format
 ## Uninstall
 
 1. Go to `chrome://extensions/`
-2. Find Brain Defender
+2. Find Focusan
 3. Click "Remove"
 4. Confirm removal
 

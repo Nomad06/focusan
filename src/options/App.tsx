@@ -447,7 +447,7 @@ const App: React.FC = () => {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `brain-defender-backup-${Date.now()}.json`
+      a.download = `focusan-backup-${Date.now()}.json`
       a.click()
       URL.revokeObjectURL(url)
     } catch (err) {

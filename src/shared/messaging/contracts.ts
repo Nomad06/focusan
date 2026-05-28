@@ -1,5 +1,5 @@
 /**
- * Typed messaging contracts for Brain Defender
+ * Typed messaging contracts for Focusan
  * Defines all message types for communication between UI and background
  */
 

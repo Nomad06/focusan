@@ -1,5 +1,5 @@
 /**
- * Focus sessions (Pomodoro) system for Brain Defender
+ * Focus sessions (Pomodoro) system for Focusan
  * Allows users to start timed work sessions with additional site blocking
  */
 

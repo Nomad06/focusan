@@ -66,16 +66,16 @@ When you visit a blocked site, choose from:
 ## 🚀 Installation
 
 ### From Chrome Web Store (Recommended)
-1. Visit the [Brain Defender Chrome Web Store page](#) *(coming soon)*
+1. Visit the [Focusan Chrome Web Store page](#) *(coming soon)*
 2. Click "Add to Chrome"
 3. Grant required permissions
-4. Click the Brain Defender icon to get started!
+4. Click the Focusan icon to get started!
 
 ### Manual Installation (Development)
 1. Clone this repository:
    ```bash
-   git clone https://github.com/[your-username]/brain-defender.git
-   cd brain-defender
+   git clone https://github.com/Nomad06/focusan.git
+   cd focusan
    ```
 
 2. Install dependencies:
@@ -102,19 +102,19 @@ When you visit a blocked site, choose from:
 
 #### Blocking Your First Site
 1. Navigate to a distracting website (e.g., reddit.com)
-2. Click the Brain Defender icon in your toolbar
+2. Click the Focusan icon in your toolbar
 3. Click "Add Current Site"
 4. The site is now blocked!
 
 #### Starting a Focus Session
-1. Click the Brain Defender icon
+1. Click the Focusan icon
 2. Click "Start Focus Session"
 3. Select which sites to block during the session
 4. Click "Start Pomodoro"
 5. Focus for 25 minutes!
 
 #### Viewing Statistics
-1. Right-click the Brain Defender icon
+1. Right-click the Focusan icon
 2. Select "Options"
 3. Navigate to the "Stats" tab
 4. View your blocking history and achievements
@@ -217,7 +217,7 @@ src/
 - **host_permissions**: Required to block any website
 
 ### Privacy
-Brain Defender is **100% privacy-first**:
+Focusan is **100% privacy-first**:
 - ✅ All data stored locally in your browser
 - ✅ No external servers or analytics
 - ✅ No data collection or tracking
@@ -283,7 +283,7 @@ See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation.
 3. Data stored locally - clearing browser data will reset
 
 ### Import Failed?
-1. Ensure JSON file is from Brain Defender export
+1. Ensure JSON file is from Focusan export
 2. Check file is not corrupted
 3. Try exporting again from another browser
 
@@ -316,7 +316,7 @@ ISC License - see [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-Brain Defender is built with:
+Focusan is built with:
 - [React](https://react.dev/) - UI framework
 - [TypeScript](https://www.typescriptlang.org/) - Type safety
 - [Vite](https://vitejs.dev/) - Build tool
@@ -327,8 +327,8 @@ Brain Defender is built with:
 
 ## 📞 Support
 
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/[your-username]/brain-defender/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/[your-username]/brain-defender/discussions)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/Nomad06/focusan/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/Nomad06/focusan/discussions)
 - 📧 **Email**: [your-email@example.com]
 - 🔒 **Privacy Questions**: See [PRIVACY.md](PRIVACY.md)
 
@@ -336,7 +336,7 @@ Brain Defender is built with:
 
 ## ⭐ Star History
 
-If Brain Defender helps you stay focused, consider giving it a ⭐ on GitHub!
+If Focusan helps you stay focused, consider giving it a ⭐ on GitHub!
 
 ---
 

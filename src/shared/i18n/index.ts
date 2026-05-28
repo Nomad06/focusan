@@ -1,5 +1,5 @@
 /**
- * Internationalization (i18n) system for Brain Defender
+ * Internationalization (i18n) system for Focusan
  */
 
 import { translations, type Language } from './translations'

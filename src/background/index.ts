@@ -1,5 +1,5 @@
 /**
- * Background Service Worker for Brain Defender
+ * Background Service Worker for Focusan
  * Main entry point that coordinates all extension functionality
  */
 
