@@ -52,8 +52,12 @@ try {
   const page = await browser.newPage()
   await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 1 })
 
-  const files = readdirSync(srcDir).filter((f) =>
-    /\.(png|jpe?g)$/i.test(f) && !f.includes('promo')
+  // Skip promo source art and any "promo*"/"focusan_*tile*"/"focusan_*banner*"
+  // files — those feed the tile generator below, not the screenshot pipeline.
+  const files = readdirSync(srcDir).filter(
+    (f) =>
+      /\.(png|jpe?g)$/i.test(f) &&
+      !/promo|focusan_(large_tile|marquee_banner|promo)/i.test(f)
   )
 
   for (const file of files) {
@@ -84,26 +88,43 @@ try {
   }
 
   // ---- promo tiles ----
-  const promoHtml = (w, h, big) => `data:text/html;charset=utf-8,${encodeURIComponent(`
-    <html><head><meta charset="utf-8"></head><body style="margin:0;width:${w}px;height:${h}px;
-      font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#eef2f7;
-      background:radial-gradient(circle at 30% 20%,#1e2a3a,#0a0d12);
-      display:flex;flex-direction:column;justify-content:center;
-      padding:0 ${big ? 80 : 28}px;box-sizing:border-box">
-      <div style="font-size:${big ? 72 : 30}px;font-weight:800;letter-spacing:1px">
-        Focusan <span style="color:#7fb3ff">集中</span></div>
-      <div style="font-size:${big ? 30 : 15}px;margin-top:${big ? 18 : 8}px;color:#9fb0c4;max-width:${big ? 820 : 360}px">
-        Block distractions with Japanese-zen focus — schedules, daily limits &amp; Pomodoro.</div>
-    </body></html>`)}`
+  // Cover-fit the marquee artwork to the required CWS sizes. Source art is
+  // 1168×784 with text on the left half and samurai/sun on the right; both
+  // target aspects are wider than the source, so cover trims top/bottom and
+  // keeps the full horizontal composition intact.
+  const artPath = resolve(srcDir, 'focusan_marquee_banner.jpg')
+  const artUrl = existsSync(artPath) ? fileToDataUrl(artPath) : null
+
+  const promoHtml = (w, h) =>
+    artUrl
+      ? `data:text/html;charset=utf-8,${encodeURIComponent(`
+          <html><head><meta charset="utf-8"></head>
+          <body style="margin:0;width:${w}px;height:${h}px;background:#0a0d12">
+            <div style="width:${w}px;height:${h}px;
+              background-image:url('${artUrl}');
+              background-size:cover;background-position:center center;
+              background-repeat:no-repeat"></div>
+          </body></html>`)}`
+      : `data:text/html;charset=utf-8,${encodeURIComponent(`
+          <html><head><meta charset="utf-8"></head><body style="margin:0;width:${w}px;height:${h}px;
+            font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#eef2f7;
+            background:radial-gradient(circle at 30% 20%,#1e2a3a,#0a0d12);
+            display:flex;flex-direction:column;justify-content:center;
+            padding:0 ${w > 800 ? 80 : 28}px;box-sizing:border-box">
+            <div style="font-size:${w > 800 ? 72 : 30}px;font-weight:800;letter-spacing:1px">
+              Focusan <span style="color:#7fb3ff">集中</span></div>
+            <div style="font-size:${w > 800 ? 30 : 15}px;margin-top:${w > 800 ? 18 : 8}px;color:#9fb0c4;max-width:${w > 800 ? 820 : 360}px">
+              Bushidō for your browser — cut distractions with calm focus and samurai resolve.</div>
+          </body></html>`)}`
 
   const promo = await browser.newPage()
   await promo.setViewport({ width: 440, height: 280, deviceScaleFactor: 1 })
-  await promo.goto(promoHtml(440, 280, false), { waitUntil: 'networkidle2' })
+  await promo.goto(promoHtml(440, 280), { waitUntil: 'networkidle2' })
   await promo.screenshot({ path: resolve(outDir, 'promo-small-440x280.png') })
   console.log('promo -> promo-small-440x280.png')
 
   await promo.setViewport({ width: 1400, height: 560, deviceScaleFactor: 1 })
-  await promo.goto(promoHtml(1400, 560, true), { waitUntil: 'networkidle2' })
+  await promo.goto(promoHtml(1400, 560), { waitUntil: 'networkidle2' })
   await promo.screenshot({ path: resolve(outDir, 'promo-marquee-1400x560.png') })
   console.log('promo -> promo-marquee-1400x560.png')
 } finally {
