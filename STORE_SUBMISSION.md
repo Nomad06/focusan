@@ -62,25 +62,26 @@ handling matches disclosures.
 **Name:** Focusan — 集中
 
 **Short description (≤132 chars):**
-> Block distracting sites with Japanese-zen focus. Schedules, daily limits, and
-> Pomodoro sessions to master your attention.
+> Bushidō for your browser. Cut distractions with zen calm and samurai resolve —
+> schedules, daily limits, Pomodoro rituals.
 
 **Detailed description:**
-> Focusan helps you reclaim your attention with calm, deliberate website
-> blocking inspired by Japanese discipline.
+> Focusan — 集中 — turns distraction-blocking into a quiet discipline inspired
+> by Bushidō. Zen calm on the surface, samurai resolve underneath.
 >
-> • Block any site instantly from the toolbar popup.
-> • Schedule blocking — work hours, weekends, custom days/times, even overnight
->   ranges and per-day rules.
-> • Daily limits — cap visits per day or minutes per day on a site; Focusan eases
->   off until you cross the line, then steps in.
-> • Pomodoro focus sessions — timed work blocks in blocklist or whitelist mode.
-> • Temporary allowances — grant yourself a short, time-boxed exception when you
->   genuinely need it.
-> • Local statistics, streaks, and achievements to keep you motivated.
+> • Cut any site cleanly — blocked at the network layer, not just hidden.
+> • Schedule your hours — work hours, weekdays, weekends, custom day/time rules,
+>   overnight ranges.
+> • Daily limits — cap visits or minutes per site; Focusan steps in only at the
+>   line.
+> • Focus rituals (Pomodoro) — blocklist or whitelist mode, calm timer, clear
+>   bell.
+> • Temporary allowances — a short, deliberate exception when you actually need
+>   one.
+> • Local statistics, streaks, achievements — quiet motivation, no leaderboards,
+>   no comparisons.
 >
-> Privacy first: everything stays in your browser. Focusan never sends your
-> browsing anywhere. Available in English and Russian.
+> Privacy first. Nothing leaves your browser. English and Russian.
 
 ---
 

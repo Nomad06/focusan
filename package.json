@@ -2,7 +2,7 @@
   "name": "focusan",
   "version": "2.0.0",
   "type": "module",
-  "description": "Защищает ваш фокус и внимание, блокируя отвлекающие сайты с мотивационными напоминаниями",
+  "description": "Bushidō for your browser. Cut distractions with zen calm and samurai resolve — schedules, daily limits, Pomodoro rituals.",
   "scripts": {
     "dev": "vite build --watch --mode development",
     "build": "tsc && vite build",

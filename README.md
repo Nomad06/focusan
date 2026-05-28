@@ -1,9 +1,9 @@
-# Focusan 🧠🛡️
+# Focusan — 集中
 
 ![Focusan](icons/icon128.png)
 
 ## Overview
-Focusan is a modern Chrome extension that helps you maintain focus and protect your attention by blocking distracting websites. Unlike harsh blockers, Focusan offers wellness exercises and motivational support when you're distracted, turning moments of weakness into wellness breaks.
+**Bushidō for your browser.** Focusan turns distraction-blocking into a quiet discipline inspired by Japanese focus tradition — zen calm at the surface, samurai resolve underneath. Block any site at the network layer with `declarativeNetRequest`, set work-hour schedules, cap daily visits and minutes, run Pomodoro focus rituals, and grant deliberate temporary allowances when you genuinely need them. Local statistics, streaks, and achievements reinforce the habit without comparing you to anyone. Everything stays on your device.
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue?logo=google-chrome)](https://chrome.google.com/webstore)
 [![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](CHANGELOG.md)
