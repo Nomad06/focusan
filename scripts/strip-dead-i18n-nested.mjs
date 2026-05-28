@@ -13,12 +13,12 @@ import { resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
 const transFile = resolve(root, 'src/shared/i18n/translations.ts')
+// IMPORTANT: verify each entry against `grep -rn "t('<key>\." src/` before
+// running. A prior run wrongly listed `common`, `options`, and `errors` as
+// dead and stripped ~80 keys still referenced by src/options/*, leaving the
+// Options page rendering raw placeholders.
 const deadKeys = [
-  'common',
   'popup',
-  'focusSession',
-  'options',
-  'errors',
   'exercises',
   'security',
   'ranks',
