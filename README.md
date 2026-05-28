@@ -6,7 +6,7 @@
 **Bushidō for your browser.** Focusan turns distraction-blocking into a quiet discipline inspired by Japanese focus tradition — composed at the surface, resolute underneath. Block any site at the network layer with `declarativeNetRequest`, set work-hour schedules, cap daily visits and minutes, run Pomodoro focus sessions, and grant deliberate temporary allowances when you genuinely need them. Local statistics, streaks, and achievements reinforce the habit without comparing you to anyone. Everything stays on your device.
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Web%20Store-blue?logo=google-chrome)](https://chrome.google.com/webstore)
-[![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
 [![Manifest](https://img.shields.io/badge/manifest-v3-orange.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 

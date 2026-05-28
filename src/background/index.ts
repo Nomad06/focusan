@@ -7,7 +7,6 @@ import browser from 'webextension-polyfill'
 import { initializeMessageHandlers } from './handlers'
 import { initializeAlarmHandlers, setupPeriodicAlarms } from './alarms'
 import { rebuildRules } from './dnr-manager'
-import { runMigrations, needsMigration } from '../shared/storage/migrations'
 import { initializeStorageListener } from './storage-listener'
 import { initFocusSessions, getCurrentSession, SessionState } from '../shared/domain/focus-sessions'
 import { getSites, getTempWhitelist } from '../shared/storage/storage'
@@ -72,18 +71,6 @@ async function handleInstalled(details: browser.Runtime.OnInstalledDetailsType):
 
     if (details.reason === 'update') {
       console.log('[Background] Extension updated from', details.previousVersion)
-    }
-
-    // Check if migrations are needed
-    const migrationNeeded = await needsMigration()
-    if (migrationNeeded) {
-      console.log('[Background] Running data migrations...')
-      const result = await runMigrations()
-      if (result.migrated) {
-        console.log('[Background] Migrations completed:', result)
-      } else {
-        console.warn('[Background] Migrations not completed:', result)
-      }
     }
 
     // Initial DNR rules build

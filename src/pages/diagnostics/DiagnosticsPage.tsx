@@ -45,10 +45,6 @@ const DiagnosticsPage: React.FC = () => {
   const toast = useToast()
   const [sites, setSites] = useState<SiteObject[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
-  const [migrationStatus, setMigrationStatus] = useState<{
-    version: number
-    needsMigration: boolean
-  } | null>(null)
   const [dnrRules, setDnrRules] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
@@ -59,14 +55,12 @@ const DiagnosticsPage: React.FC = () => {
   const loadDiagnostics = async () => {
     setLoading(true)
     try {
-      const [sitesData, statsData, migrationData] = await Promise.all([
+      const [sitesData, statsData] = await Promise.all([
         messagingClient.getSites(),
         messagingClient.getStats(),
-        messagingClient.getMigrationStatus(),
       ])
       setSites(sitesData)
       setStats(statsData)
-      setMigrationStatus(migrationData)
       try {
         const rules = await chrome.declarativeNetRequest.getDynamicRules()
         setDnrRules(rules)
@@ -77,18 +71,6 @@ const DiagnosticsPage: React.FC = () => {
       console.error('[Diagnostics] Error loading data:', err)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleRunMigrations = async () => {
-    if (!confirm('Run data migrations? This may take a moment.')) return
-    try {
-      const result = await messagingClient.runMigrations()
-      toast(`Migrations: ${JSON.stringify(result)}`, 'success')
-      await loadDiagnostics()
-    } catch (err) {
-      console.error('[Diagnostics] Error running migrations:', err)
-      toast('Failed to run migrations', 'error')
     }
   }
 
@@ -134,16 +116,7 @@ const DiagnosticsPage: React.FC = () => {
   }
 
   const sysInfoRows: Array<[string, React.ReactNode]> = [
-    ['Version', '2.0.0'],
-    ['Migration Version', migrationStatus?.version ?? 'Unknown'],
-    [
-      'Needs Migration',
-      migrationStatus?.needsMigration ? (
-        <span className="text-nissho-orange">⚠ Yes</span>
-      ) : (
-        <span className="text-seiheki-blue">✓ No</span>
-      ),
-    ],
+    ['Version', '1.0.0'],
     ['Total Sites', sites.length],
     ['Total Blocks', stats?.totalBlocks || 0],
     ['Streak Days', stats?.streakDays || 0],
@@ -209,11 +182,6 @@ const DiagnosticsPage: React.FC = () => {
             >
               ⟳ Reload Page
             </button>
-            {migrationStatus?.needsMigration && (
-              <button className="btn primary focus-ring" onClick={handleRunMigrations}>
-                ⚡ Run Migrations
-              </button>
-            )}
           </div>
         </section>
 

@@ -35,7 +35,6 @@ import {
   getCurrentSession,
 } from '../shared/domain/focus-sessions'
 import { checkAchievements, getAchievements } from '../shared/domain/achievements'
-import { runMigrations, getMigrationVersion, needsMigration } from '../shared/storage/migrations'
 import { SiteObjectSchema } from '../shared/storage/schemas'
 
 /**
@@ -142,12 +141,6 @@ export async function handleMessage(message: Message): Promise<unknown> {
       // ========================================
       // System
       // ========================================
-      case MessageType.GET_MIGRATION_STATUS:
-        return await handleGetMigrationStatus()
-
-      case MessageType.RUN_MIGRATIONS:
-        return await handleRunMigrations()
-
       case MessageType.SET_ONBOARDING_SEEN:
         return await handleSetOnboardingSeen(message.seen)
 
@@ -375,26 +368,6 @@ async function handleImportData(
   await rebuildRules()
 
   return createSuccessResponse()
-}
-
-async function handleGetMigrationStatus(): Promise<
-  MessageResponse<MessageType.GET_MIGRATION_STATUS>
-> {
-  const version = await getMigrationVersion()
-  const needsMigrationCheck = await needsMigration()
-  return {
-    version,
-    needsMigration: needsMigrationCheck,
-  }
-}
-
-async function handleRunMigrations(): Promise<MessageResponse<MessageType.RUN_MIGRATIONS>> {
-  const result = await runMigrations()
-
-  // Rebuild DNR rules after migrations
-  await rebuildRules()
-
-  return { result }
 }
 
 async function handleSetOnboardingSeen(

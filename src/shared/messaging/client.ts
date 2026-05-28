@@ -275,26 +275,6 @@ export const messagingClient = {
   },
 
   /**
-   * Get migration status
-   */
-  async getMigrationStatus() {
-    const response = await sendMessage({
-      type: MessageType.GET_MIGRATION_STATUS,
-    })
-    return response
-  },
-
-  /**
-   * Run pending migrations
-   */
-  async runMigrations() {
-    const response = await sendMessage({
-      type: MessageType.RUN_MIGRATIONS,
-    })
-    return response.result
-  },
-
-  /**
    * Set onboarding seen status
    */
   async setOnboardingSeen(seen: boolean): Promise<boolean> {

@@ -16,9 +16,6 @@ export const STORAGE_KEYS = {
   CHALLENGE_MODE: 'challengeMode',
 } as const
 
-// Migration version - increment when data format changes
-export const CURRENT_MIGRATION_VERSION = 3
-
 // DNR rule ID ranges
 export const DNR_RULE_IDS = {
   MIN: 1,

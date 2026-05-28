@@ -47,8 +47,6 @@ export enum MessageType {
   IMPORT_DATA = 'IMPORT_DATA',
 
   // System
-  GET_MIGRATION_STATUS = 'GET_MIGRATION_STATUS',
-  RUN_MIGRATIONS = 'RUN_MIGRATIONS',
   SET_ONBOARDING_SEEN = 'SET_ONBOARDING_SEEN',
   GET_CHALLENGE_MODE = 'GET_CHALLENGE_MODE',
   SET_CHALLENGE_MODE = 'SET_CHALLENGE_MODE',
@@ -78,8 +76,6 @@ export interface SimpleMessage extends BaseMessage {
   | MessageType.CLEAR_STATS
   | MessageType.GET_ACHIEVEMENTS
   | MessageType.EXPORT_DATA
-  | MessageType.GET_MIGRATION_STATUS
-  | MessageType.RUN_MIGRATIONS
   | MessageType.GET_CHALLENGE_MODE
 }
 
@@ -231,8 +227,6 @@ export interface MessageResponses {
   [MessageType.GET_ACHIEVEMENTS]: { achievements: unknown }
   [MessageType.EXPORT_DATA]: { data: string }
   [MessageType.IMPORT_DATA]: { success: boolean }
-  [MessageType.GET_MIGRATION_STATUS]: { version: number; needsMigration: boolean }
-  [MessageType.RUN_MIGRATIONS]: { result: unknown }
   [MessageType.SET_ONBOARDING_SEEN]: { success: boolean }
   [MessageType.GET_CHALLENGE_MODE]: { enabled: boolean }
   [MessageType.SET_CHALLENGE_MODE]: { success: boolean }
