@@ -8,19 +8,19 @@ interface Option<T> {
   label: string
 }
 
-interface ZenSelectProps<T> {
+interface BushidoSelectProps<T> {
   options: Option<T>[]
   value: T
   onChange: (value: T) => void
   label?: string
 }
 
-export function ZenSelect<T extends string | number>({
+export function BushidoSelect<T extends string | number>({
   options,
   value,
   onChange,
   label,
-}: ZenSelectProps<T>) {
+}: BushidoSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)

@@ -55,8 +55,8 @@ export const RefreshcwIcon = RefreshCw
 
 // Standardized Custom Icons that match Lucide style
 // Default stroke width: 1.5px (Lucide default is 2px, but we can override or match)
-// Lucide 'thin' is often desired for Zen look. Let's stick to Lucide default props spread first,
-// but default strokeWidth to 1.5 if not specified, to match the "Zen" aesthetic.
+// Lucide 'thin' is often desired for the Bushidō look. Let's stick to Lucide default props spread first,
+// but default strokeWidth to 1.5 if not specified, to match the Bushidō aesthetic.
 
 export const SamuraiShieldIcon: React.FC<LucideProps> = ({
   size = 24,
@@ -173,9 +173,9 @@ export const KabutoIcon: React.FC<LucideProps> = ({
   </svg>
 )
 
-// Premium Japanese Zen Custom Icons
+// Premium Japanese Custom Icons
 
-export const ZenSettingsIcon: React.FC<LucideProps> = ({
+export const BushidoSettingsIcon: React.FC<LucideProps> = ({
   size = 24,
   strokeWidth = 1.5,
   className,
@@ -199,7 +199,7 @@ export const ZenSettingsIcon: React.FC<LucideProps> = ({
   </svg>
 )
 
-export const ZenCloseIcon: React.FC<LucideProps> = ({
+export const BushidoCloseIcon: React.FC<LucideProps> = ({
   size = 24,
   strokeWidth = 1.5,
   className,
@@ -222,7 +222,7 @@ export const ZenCloseIcon: React.FC<LucideProps> = ({
   </svg>
 )
 
-export const ZenTimerIcon: React.FC<LucideProps> = ({
+export const BushidoTimerIcon: React.FC<LucideProps> = ({
   size = 24,
   strokeWidth = 1.5,
   className,

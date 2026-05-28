@@ -247,10 +247,10 @@ export const focusanTheme: Theme = {
     }
 
     /* Serif for kanji */
-    [data-theme="focusan"] .zen-quote,
+    [data-theme="focusan"] .bushido-quote,
     [data-theme="focusan"] .kanji,
     [data-theme="focusan"] .quote,
-    [data-theme="focusan"] [data-zen] {
+    [data-theme="focusan"] [data-bushido] {
       font-family: var(--font-serif);
       font-weight: 700;
       letter-spacing: 0.05em;

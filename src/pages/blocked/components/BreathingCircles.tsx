@@ -1,6 +1,6 @@
 /**
  * Breathing Circles Component
- * Meditative breathing animation for Japanese Zen theme
+ * Meditative breathing animation
  * Two concentric circles that expand/contract in a soothing rhythm
  */
 

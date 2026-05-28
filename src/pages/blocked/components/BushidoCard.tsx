@@ -1,20 +1,20 @@
 /**
- * Zen Card — Bushidō verdict panel.
+ * Bushidō Card — verdict panel.
  * Crimson hanko + massive kanji + ink-brush meaning + verdict message.
  */
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import type { ZenPhrase } from '../../../shared/japanese-zen'
+import type { BushidoPhrase } from '../../../shared/bushido-phrases'
 
-interface ZenCardProps {
-  zenPhrase: ZenPhrase
+interface BushidoCardProps {
+  phrase: BushidoPhrase
   language: 'en' | 'ru'
 }
 
-export const ZenCard: React.FC<ZenCardProps> = ({ zenPhrase, language }) => {
-  const meaning = language === 'ru' ? zenPhrase.meaningRu : zenPhrase.meaning
-  const message = language === 'ru' ? zenPhrase.messageRu : zenPhrase.message
+export const BushidoCard: React.FC<BushidoCardProps> = ({ phrase, language }) => {
+  const meaning = language === 'ru' ? phrase.meaningRu : phrase.meaning
+  const message = language === 'ru' ? phrase.messageRu : phrase.message
 
   const container = {
     hidden: { opacity: 0 },
@@ -51,9 +51,9 @@ export const ZenCard: React.FC<ZenCardProps> = ({ zenPhrase, language }) => {
             lineHeight: 0.95,
             letterSpacing: '0.04em',
           }}
-          data-zen
+          data-bushido
         >
-          {zenPhrase.kanji}
+          {phrase.kanji}
         </h1>
       </motion.div>
 
@@ -63,7 +63,7 @@ export const ZenCard: React.FC<ZenCardProps> = ({ zenPhrase, language }) => {
           className="font-serif italic mr-3"
           style={{ fontSize: 28, color: 'var(--kinpaku)', letterSpacing: '0.06em' }}
         >
-          {zenPhrase.romanji}
+          {phrase.romanji}
         </span>
       </motion.div>
 

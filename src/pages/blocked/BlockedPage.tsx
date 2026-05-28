@@ -3,15 +3,15 @@ import { motion } from 'framer-motion'
 import { t, initI18n } from '../../shared/i18n'
 import { useLanguage } from '../../shared/i18n/useLanguage'
 import { messagingClient } from '../../shared/messaging/client'
-import { ZenCard } from './components/ZenCard'
-import { ZenQuoteFooter } from './components/ZenQuoteFooter'
+import { BushidoCard } from './components/BushidoCard'
+import { QuoteFooter } from './components/QuoteFooter'
 import { ToriiIcon, MountainIcon } from '../../shared/components/Icons'
-import { getRandomZenPhrase, getRandomZenQuote } from '../../shared/japanese-zen'
+import { getRandomBushidoPhrase, getRandomBushidoQuote } from '../../shared/bushido-phrases'
 
 const BlockedPage: React.FC = () => {
   const currentLanguage = useLanguage()
-  const [zenPhrase] = useState(() => getRandomZenPhrase())
-  const [zenQuote] = useState(() => getRandomZenQuote())
+  const [phrase] = useState(() => getRandomBushidoPhrase())
+  const [quote] = useState(() => getRandomBushidoQuote())
   const [hostname, setHostname] = useState<string>('')
 
   useEffect(() => {
@@ -122,7 +122,7 @@ const BlockedPage: React.FC = () => {
         />
 
         {/* Kanji card — main statement */}
-        <ZenCard zenPhrase={zenPhrase} language={currentLanguage} />
+        <BushidoCard phrase={phrase} language={currentLanguage} />
 
         {/* Three-breaths line */}
         <motion.div
@@ -187,7 +187,7 @@ const BlockedPage: React.FC = () => {
 
       {/* ──── FOOTER ──── */}
       <footer className="relative z-10 px-8 pb-10 pt-8">
-        <ZenQuoteFooter quote={zenQuote} language={currentLanguage} />
+        <QuoteFooter quote={quote} language={currentLanguage} />
       </footer>
     </div>
   )

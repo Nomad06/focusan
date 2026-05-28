@@ -2,7 +2,7 @@
  * Translation strings for Focusan
  * Supports Russian (primary) and English
  *
- * Voice: Bushidō / Zen — gates (門), seals (印), the Way (道). Respectful and calm,
+ * Voice: Bushidō — gates (門), seals (印), the Way (道). Respectful and calm,
  * never punitive. Functional clarity always wins over flourish.
  */
 
@@ -27,7 +27,6 @@ export const translations = {
       step2: '2) Сделай {count} глубоких вдоха.',
       step3: '3) Скажи вслух: «я выбираю цель, а не импульс».',
       breathe: 'Дыши. Импульс проходит быстрее, чем кажется.',
-      zenQuote: 'Слово дзен',
       closeTab: 'Закрыть вкладку',
       immersionHint: 'Для полного погружения перейди в полноэкранный режим',
       goBack: 'Назад',
@@ -152,7 +151,6 @@ export const translations = {
       subtitleAppearance: 'Гармонизируйте свой опыт',
       selectedItems: 'Выбрано',
       clearSelection: 'Очистить',
-      zenFocus: '集中',
       mostBlocked: 'Самые частые врата',
       unlockedAchievements: 'Открытые звания',
       progress: 'Путь',
@@ -447,7 +445,6 @@ export const translations = {
       step2: '2) Take {count} deep breaths.',
       step3: '3) Say out loud: "I choose goals, not impulses".',
       breathe: 'Breathe. The urge passes faster than you think.',
-      zenQuote: 'Zen Word',
       closeTab: 'Close Tab',
       immersionHint: 'For true immersion, enter full screen',
       goBack: 'Go Back',
@@ -571,7 +568,6 @@ export const translations = {
       subtitleAppearance: 'Harmonize your experience',
       selectedItems: 'Selected Items',
       clearSelection: 'Clear',
-      zenFocus: '集中',
       mostBlocked: 'Most Frequent Gates',
       unlockedAchievements: 'Ranks Attained',
       progress: 'The Way',

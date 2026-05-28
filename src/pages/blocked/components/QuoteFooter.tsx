@@ -1,17 +1,17 @@
 /**
- * Zen Quote Footer — Bushidō wisdom etched at the gate.
+ * Bushidō Quote Footer — wisdom etched at the gate.
  */
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import type { ZenQuote } from '../../../shared/japanese-zen'
+import type { BushidoQuote } from '../../../shared/bushido-phrases'
 
-interface ZenQuoteFooterProps {
-  quote: ZenQuote
+interface QuoteFooterProps {
+  quote: BushidoQuote
   language: 'en' | 'ru'
 }
 
-export const ZenQuoteFooter: React.FC<ZenQuoteFooterProps> = ({ quote, language }) => {
+export const QuoteFooter: React.FC<QuoteFooterProps> = ({ quote, language }) => {
   const text = language === 'ru' ? quote.textRu : quote.text
 
   return (
@@ -38,7 +38,7 @@ export const ZenQuoteFooter: React.FC<ZenQuoteFooterProps> = ({ quote, language 
           fontSize: '0.95rem',
           letterSpacing: '0.02em',
         }}
-        data-zen
+        data-bushido
       >
         「 {text} 」
       </p>

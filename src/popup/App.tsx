@@ -1,6 +1,6 @@
 /**
  * Popup React App for Focusan
- * High-end Japanese Zen Redesign
+ * High-end Bushidō Redesign
  */
 
 import React, { useState, useEffect } from 'react'
@@ -9,7 +9,7 @@ import { messagingClient } from '../shared/messaging/client'
 import { normalizeHost } from '../shared/utils/domain'
 import { t, initI18n } from '../shared/i18n'
 import { SessionState, type FocusSession } from '../shared/domain/focus-sessions'
-import { ZenSettingsIcon, ZenCloseIcon } from '../shared/components/Icons'
+import { BushidoSettingsIcon, BushidoCloseIcon } from '../shared/components/Icons'
 import { playSound, SoundType } from '../shared/sound'
 import { ChallengeModal } from '../shared/components/ChallengeModal'
 import { useToast } from '../shared/components/Toast'
@@ -314,7 +314,7 @@ const App: React.FC = () => {
                 className="transition-all p-2 rounded"
                 style={{ color: 'var(--nezumi)' }}
               >
-                <ZenSettingsIcon strokeWidth={1.5} />
+                <BushidoSettingsIcon strokeWidth={1.5} />
               </motion.button>
             </motion.header>
 
@@ -620,7 +620,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
             onClose()
           }}
         >
-          <ZenCloseIcon size={20} />
+          <BushidoCloseIcon size={20} />
         </button>
       </div>
 
@@ -742,7 +742,7 @@ const PomodoroModal: React.FC<PomodoroModalProps> = ({ onClose, onStart }) => {
                       onClick={() => handleRemoveAdditionalSite(host)}
                       className="text-sumi-gray hover:text-danger w-4 h-4 flex items-center justify-center rounded-full hover:bg-danger/10"
                     >
-                      <ZenCloseIcon size={12} strokeWidth={2} />
+                      <BushidoCloseIcon size={12} strokeWidth={2} />
                     </button>
                   </motion.div>
                 ))}

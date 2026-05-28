@@ -173,7 +173,7 @@ export const focusanShiroTheme: Theme = {
     }
 
     /* Inputs */
-    [data-theme="focusan-shiro"] .zen-input,
+    [data-theme="focusan-shiro"] .bushido-input,
     [data-theme="focusan-shiro"] input,
     [data-theme="focusan-shiro"] textarea,
     [data-theme="focusan-shiro"] select {
@@ -181,7 +181,7 @@ export const focusanShiroTheme: Theme = {
       color: #1A1410;
       border-color: rgba(122, 24, 24, 0.18);
     }
-    [data-theme="focusan-shiro"] .zen-input::placeholder,
+    [data-theme="focusan-shiro"] .bushido-input::placeholder,
     [data-theme="focusan-shiro"] input::placeholder,
     [data-theme="focusan-shiro"] textarea::placeholder { color: #A89980; }
 

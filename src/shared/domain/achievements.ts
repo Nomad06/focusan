@@ -28,7 +28,7 @@ export enum AchievementType {
   SITES_BLOCKED_100 = 'sites_blocked_100', // Phoenix Badge
 
   // Perfect week achievement (完璧 - Kanpeki)
-  WEEK_NO_BLOCK = 'week_no_block', // Zen Master Badge
+  WEEK_NO_BLOCK = 'week_no_block', // Bushidō Master Badge
 }
 
 // Achievement definition interface

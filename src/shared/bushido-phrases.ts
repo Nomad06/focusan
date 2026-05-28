@@ -1,10 +1,10 @@
 /**
- * Japanese Zen Content Collection
- * Kanji-based zen phrases for the Japanese theme
+ * Japanese Bushidō Phrase Collection
+ * Kanji-based Bushidō phrases
  * Each entry includes large kanji display + meaning + context message
  */
 
-export interface ZenPhrase {
+export interface BushidoPhrase {
   kanji: string // Large kanji character(s) to display
   romanji: string // Romanized pronunciation
   meaning: string // English translation
@@ -14,7 +14,7 @@ export interface ZenPhrase {
   theme: 'focus' | 'discipline' | 'patience' | 'mindfulness' | 'strength' | 'simplicity'
 }
 
-export const JAPANESE_ZEN_PHRASES: ZenPhrase[] = [
+export const JAPANESE_PHRASES: BushidoPhrase[] = [
   {
     kanji: '継続',
     romanji: 'Keizoku',
@@ -220,13 +220,13 @@ export const JAPANESE_ZEN_PHRASES: ZenPhrase[] = [
 /**
  * Bottom quotes for Japanese theme - displayed at page bottom
  */
-export interface ZenQuote {
+export interface BushidoQuote {
   text: string
   textRu: string
   author?: string
 }
 
-export const JAPANESE_ZEN_QUOTES: ZenQuote[] = [
+export const JAPANESE_QUOTES: BushidoQuote[] = [
   {
     text: 'The obstacle is the path.',
     textRu: 'Препятствие и есть путь.',
@@ -290,23 +290,23 @@ export const JAPANESE_ZEN_QUOTES: ZenQuote[] = [
 ]
 
 /**
- * Get a random zen phrase
+ * Get a random phrase
  */
-export function getRandomZenPhrase(): ZenPhrase {
-  return JAPANESE_ZEN_PHRASES[Math.floor(Math.random() * JAPANESE_ZEN_PHRASES.length)]
+export function getRandomBushidoPhrase(): BushidoPhrase {
+  return JAPANESE_PHRASES[Math.floor(Math.random() * JAPANESE_PHRASES.length)]
 }
 
 /**
- * Get a random zen quote
+ * Get a random quote
  */
-export function getRandomZenQuote(): ZenQuote {
-  return JAPANESE_ZEN_QUOTES[Math.floor(Math.random() * JAPANESE_ZEN_QUOTES.length)]
+export function getRandomBushidoQuote(): BushidoQuote {
+  return JAPANESE_QUOTES[Math.floor(Math.random() * JAPANESE_QUOTES.length)]
 }
 
 /**
- * Get zen phrase by theme
+ * Get phrase by theme
  */
-export function getZenPhraseByTheme(theme: ZenPhrase['theme']): ZenPhrase {
-  const filtered = JAPANESE_ZEN_PHRASES.filter(p => p.theme === theme)
-  return filtered[Math.floor(Math.random() * filtered.length)] || getRandomZenPhrase()
+export function getBushidoPhraseByTheme(theme: BushidoPhrase['theme']): BushidoPhrase {
+  const filtered = JAPANESE_PHRASES.filter(p => p.theme === theme)
+  return filtered[Math.floor(Math.random() * filtered.length)] || getRandomBushidoPhrase()
 }

@@ -263,7 +263,7 @@ export const ChallengeModal: React.FC<ChallengeModalProps> = ({
                     }}
                     onPaste={e => e.preventDefault()}
                     placeholder="…"
-                    className="zen-input text-center"
+                    className="bushido-input text-center"
                     style={{
                       fontFamily: 'var(--serif)',
                       fontSize: 14,

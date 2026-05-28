@@ -7,7 +7,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { type Schedule, ScheduleMode } from '../shared/domain/schedule'
 import { t } from '../shared/i18n'
-import { ZenSelect } from './components/ZenSelect'
+import { BushidoSelect } from './components/BushidoSelect'
 
 interface ScheduleModalProps {
   host: string
@@ -105,7 +105,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
         <div className="p-6 overflow-y-auto max-h-[70vh]">
           {/* Mode selector */}
 
-          <ZenSelect
+          <BushidoSelect
             label={t('schedule.scheduleMode')}
             value={mode}
             onChange={val => setMode(val as ScheduleMode)}

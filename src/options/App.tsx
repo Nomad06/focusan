@@ -1,6 +1,6 @@
 /**
  * Options Page React App for Focusan
- * High-end Japanese Zen Redesign
+ * High-end Bushidō Redesign
  */
 
 import React, { useState, useEffect } from 'react'

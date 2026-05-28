@@ -286,7 +286,7 @@ const App: React.FC = () => {
                     onChange={e => { setSiteInput(e.target.value); if (siteError) setSiteError('') }}
                     onKeyDown={e => e.key === 'Enter' && goToFinish()}
                     placeholder="youtube.com"
-                    className="zen-input text-lg font-mono text-center"
+                    className="bushido-input text-lg font-mono text-center"
                     style={{
                       paddingLeft: 44,
                       paddingRight: 44,
