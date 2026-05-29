@@ -6,13 +6,17 @@
 import browser from 'webextension-polyfill'
 import { focusanTheme } from './focusan'
 import { focusanShiroTheme } from './focusan-shiro'
+import { focusanFuinjutsuTheme } from './focusan-fuinjutsu'
+import { focusanDennoTheme } from './focusan-denno'
 import type { Theme } from './types'
 
 const STORAGE_KEY = 'theme_preference'
 
 export const themeRegistry: Record<string, Theme> = {
-  'focusan':       focusanTheme,
-  'focusan-shiro': focusanShiroTheme,
+  'focusan':           focusanTheme,
+  'focusan-shiro':     focusanShiroTheme,
+  'focusan-fuinjutsu': focusanFuinjutsuTheme,
+  'focusan-denno':     focusanDennoTheme,
 }
 
 /**
@@ -97,4 +101,4 @@ export async function initializeTheme(): Promise<void> {
 }
 
 export type { Theme } from './types'
-export { focusanTheme, focusanShiroTheme }
+export { focusanTheme, focusanShiroTheme, focusanFuinjutsuTheme, focusanDennoTheme }

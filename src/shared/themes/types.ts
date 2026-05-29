@@ -3,6 +3,8 @@
  * Defines the structure for switchable themes in the extension
  */
 
+import type React from 'react'
+
 export interface ThemeColors {
   // Background colors
   bg1: string
@@ -53,6 +55,18 @@ export interface ThemeMetadata {
 }
 
 /**
+ * Surfaces a theme can override.
+ * Themes that only swap CSS leave this empty; themes that want a different
+ * page shape provide one or more components, which get rendered in place
+ * of the default surfaces by the corresponding main.tsx entry.
+ */
+export interface ThemeSurfaces {
+  popup?: React.ComponentType
+  options?: React.ComponentType
+  blocked?: React.ComponentType
+}
+
+/**
  * Complete theme definition
  */
 export interface Theme {
@@ -64,6 +78,9 @@ export interface Theme {
 
   // Custom CSS that gets injected
   customCSS?: string
+
+  // Optional JSX-level surface overrides — present only on "deep" themes
+  surfaces?: ThemeSurfaces
 }
 
 /**

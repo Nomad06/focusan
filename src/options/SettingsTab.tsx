@@ -127,15 +127,17 @@ export const SettingsTab: React.FC = () => {
               {t('bushido.theWay') /* Theme */}
             </h3>
             <p className="text-sm font-serif italic" style={{ color: 'var(--muted)' }}>
-              Kuro (lacquer) or Shiro (washi paper).
+              Kuro · Shiro · Fūinjutsu · Dennō (netrunner HUD).
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           {[
-            { id: 'focusan',       kanji: '黒', label: 'Kuro',  desc: 'Black lacquer · crimson seal',  bg: '#0B0A0A', fg: '#F2E9D8', accent: '#B82E2E' },
-            { id: 'focusan-shiro', kanji: '白', label: 'Shiro', desc: 'Washi paper · sumi ink',        bg: '#F4EDE0', fg: '#1A1410', accent: '#B82E2E' },
+            { id: 'focusan',           kanji: '黒', label: 'Kuro',      desc: 'Black lacquer · crimson seal',     bg: '#0B0A0A', fg: '#F2E9D8', accent: '#B82E2E' },
+            { id: 'focusan-shiro',     kanji: '白', label: 'Shiro',     desc: 'Washi paper · sumi ink',           bg: '#F4EDE0', fg: '#1A1410', accent: '#B82E2E' },
+            { id: 'focusan-fuinjutsu', kanji: '封', label: 'Fūinjutsu', desc: 'Makimono scroll · cinnabar seal',  bg: '#E8DCB8', fg: '#1A1410', accent: '#C8252C' },
+            { id: 'focusan-denno',     kanji: '電', label: 'Dennō',     desc: 'Netrunner HUD · amber + indigo',   bg: '#050608', fg: '#E8B847', accent: '#E8B847' },
           ].map(opt => {
             const active = themeId === opt.id
             return (
