@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
+import browser from 'webextension-polyfill'
 import { messagingClient } from '../../shared/messaging/client'
 import { t } from '../../shared/i18n'
 import type { SiteObject } from '../../shared/storage/schemas'
@@ -62,7 +63,7 @@ const DiagnosticsPage: React.FC = () => {
       setSites(sitesData)
       setStats(statsData)
       try {
-        const rules = await chrome.declarativeNetRequest.getDynamicRules()
+        const rules = await browser.declarativeNetRequest.getDynamicRules()
         setDnrRules(rules)
       } catch (err) {
         console.error('[Diagnostics] Error loading DNR rules:', err)

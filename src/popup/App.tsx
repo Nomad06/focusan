@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
+import browser from 'webextension-polyfill'
 import { motion, AnimatePresence } from 'framer-motion'
 import { messagingClient } from '../shared/messaging/client'
 import { normalizeHost } from '../shared/utils/domain'
@@ -57,7 +58,7 @@ const App: React.FC = () => {
 
   // Detect current host
   useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
+    browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
       const tab = tabs[0]
       if (tab?.url) {
         const host = normalizeHost(tab.url)
@@ -158,7 +159,7 @@ const App: React.FC = () => {
   const handleAddCurrentSite = async () => {
     try {
       playSound(SoundType.BAMBOO_STRIKE)
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true })
       const tab = tabs[0]
 
       if (!tab?.url) return
@@ -180,7 +181,7 @@ const App: React.FC = () => {
   // Open options page
   const handleOpenOptions = () => {
     playSound(SoundType.KOTO_PLUCK)
-    chrome.runtime.openOptionsPage()
+    browser.runtime.openOptionsPage()
   }
 
   // Start focus session

@@ -14,7 +14,9 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
     "type-check": "tsc --noEmit",
     "screenshots": "npm run build && node scripts/screenshots.mjs",
-    "store-pack": "npm run build && node scripts/store-pack.mjs"
+    "store-pack": "npm run build && node scripts/store-pack.mjs",
+    "safari:convert": "npm run build && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun safari-web-extension-converter dist --app-name Focusan --bundle-identifier com.focusan.mac --macos-only --no-prompt --no-open --force --project-location safari-xcode && sed -i '' 's/com\\.focusan\\.Focusan/com.focusan.mac/g' safari-xcode/Focusan/Focusan.xcodeproj/project.pbxproj",
+    "safari:build": "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project safari-xcode/Focusan/Focusan.xcodeproj -scheme Focusan -configuration Debug CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build"
   },
   "keywords": [
     "chrome-extension",

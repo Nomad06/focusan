@@ -8,6 +8,9 @@ yarn.lock
 dist/
 *.tsbuildinfo
 
+# Safari Web Extension (generated Xcode project — regenerable via npm run safari:convert)
+safari-xcode/
+
 # OS files
 .DS_Store
 Thumbs.db
