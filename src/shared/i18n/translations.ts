@@ -114,6 +114,15 @@ export const translations = {
     settings: {
       tabTitle: 'Настройки',
     },
+    options: {
+      broadenSuggestTitle: 'Похоже на врата-перевёртыш',
+      broadenSuggestBody:
+        '{specific} меняет поддомен, но суть та же. Запечатай весь домен {root} — и поймаешь все варианты.',
+      broadenWholeDomain: 'Запечатать весь домен',
+      broadenOnlyThis: 'Только этот',
+      broadenButtonTitle: 'Запечатать весь домен ({root})',
+      broadenedToast: 'Запечатан весь домен {root}',
+    },
     bushido: {
       theWay: 'Путь',
       oath: 'Клятва',
@@ -275,6 +284,15 @@ export const translations = {
     },
     settings: {
       tabTitle: 'Settings',
+    },
+    options: {
+      broadenSuggestTitle: 'This looks like a rotating gate',
+      broadenSuggestBody:
+        '{specific} rotates its subdomain, but the content stays the same. Seal the whole domain {root} to catch every variant.',
+      broadenWholeDomain: 'Seal whole domain',
+      broadenOnlyThis: 'Only this one',
+      broadenButtonTitle: 'Seal the whole domain ({root})',
+      broadenedToast: 'Sealed the whole domain {root}',
     },
     bushido: {
       theWay: 'The Way',

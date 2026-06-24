@@ -180,18 +180,86 @@ export function isValidDomain(domain: string): boolean {
 }
 
 /**
- * Extracts the root domain from a hostname
+ * Common two-level public suffixes (eTLDs) where the registrable domain needs
+ * three labels, e.g. `example.co.uk`. Not the full Public Suffix List — just the
+ * widely-used multi-part TLDs, kept small to avoid a heavy dependency.
+ */
+const MULTI_PART_SUFFIXES = new Set([
+  'co.uk',
+  'org.uk',
+  'gov.uk',
+  'ac.uk',
+  'me.uk',
+  'co.jp',
+  'or.jp',
+  'ne.jp',
+  'com.au',
+  'net.au',
+  'org.au',
+  'com.br',
+  'com.mx',
+  'com.ar',
+  'com.tr',
+  'com.sg',
+  'com.cn',
+  'com.hk',
+  'com.tw',
+  'co.in',
+  'co.kr',
+  'co.za',
+  'co.nz',
+  'co.il',
+])
+
+/**
+ * Extracts the registrable (root) domain from a hostname, accounting for common
+ * multi-part public suffixes.
+ *
  * @param hostname - Full hostname (e.g., 'www.subdomain.example.com')
- * @returns Root domain (e.g., 'example.com')
+ * @returns Registrable domain (e.g., 'example.com'), or null if input is invalid
+ *
+ * @example
+ * extractRootDomain('014.filmhd1080.icu')   // => 'filmhd1080.icu'
+ * extractRootDomain('m.youtube.com')        // => 'youtube.com'
+ * extractRootDomain('a.b.example.co.uk')    // => 'example.co.uk'
  */
 export function extractRootDomain(hostname: string): string | null {
   const normalized = normalizeHost(hostname)
   if (!normalized) return null
 
   const parts = normalized.split('.')
-  if (parts.length < 2) return normalized
+  if (parts.length < 3) return normalized
 
-  // Return last two parts (domain.tld)
-  // This is a simplified approach - doesn't handle complex TLDs like .co.uk
+  // If the last two labels form a known multi-part suffix, keep three labels.
+  const lastTwo = parts.slice(-2).join('.')
+  if (MULTI_PART_SUFFIXES.has(lastTwo)) {
+    return parts.slice(-3).join('.')
+  }
+
+  // Default: registrable domain is the last two labels (domain.tld).
   return parts.slice(-2).join('.')
+}
+
+/**
+ * Returns the registrable root domain for a host ONLY if the host carries a
+ * strippable subdomain (i.e. blocking the root would broaden coverage). Used to
+ * catch sites that rotate their subdomain (e.g. `014.filmhd1080.icu` →
+ * `015.filmhd1080.icu`) while the registrable domain stays the same.
+ *
+ * @param host - Normalized host (e.g., '014.filmhd1080.icu')
+ * @returns Root domain if it differs from `host`, otherwise null.
+ *
+ * @example
+ * subdomainRoot('014.filmhd1080.icu') // => 'filmhd1080.icu'
+ * subdomainRoot('youtube.com')        // => null (already a root domain)
+ * subdomainRoot('example.co.uk')      // => null (already a root domain)
+ */
+export function subdomainRoot(host: string): string | null {
+  if (!host) return null
+  // Skip IP addresses — they have no registrable-domain concept.
+  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(host) || host.includes(':')) return null
+
+  const root = extractRootDomain(host)
+  if (!root || root === host) return null
+  return root
 }

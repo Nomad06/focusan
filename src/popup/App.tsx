@@ -14,6 +14,18 @@ import { playSound, SoundType } from '../shared/sound'
 import { ChallengeModal } from '../shared/components/ChallengeModal'
 import { useToast } from '../shared/components/Toast'
 import { useEscapeKey } from '../shared/hooks/useEscapeKey'
+import { BushidoSelect } from '../options/components/BushidoSelect'
+import { ScheduleMode, type Schedule } from '../shared/domain/schedule'
+
+/** Build a Schedule for the popup seal picker, applying ScheduleModal's defaults
+ *  for the param-bearing modes so the popup stays lightweight. */
+const buildSealSchedule = (mode: ScheduleMode): Schedule => {
+  if (mode === ScheduleMode.WORK_HOURS)
+    return { mode, workHours: { start: '09:00', end: '18:00' } }
+  if (mode === ScheduleMode.CUSTOM)
+    return { mode, customDays: [1, 2, 3, 4, 5], customTime: { start: '00:00', end: '23:59' } }
+  return { mode } // ALWAYS, WEEKENDS — no params
+}
 
 // Animation variants
 const containerVariants = {
@@ -54,6 +66,7 @@ const App: React.FC = () => {
   const [breathState, setBreathState] = useState<'inhale' | 'exhale'>('inhale')
   const [showChallengeModal, setShowChallengeModal] = useState<boolean>(false)
   const [challengeMode, setChallengeMode] = useState<boolean>(false)
+  const [sealHost, setSealHost] = useState<string | null>(null)
 
   // Detect current host
   useEffect(() => {
@@ -154,18 +167,28 @@ const App: React.FC = () => {
     return () => clearInterval(interval)
   }, [currentSession?.state, currentSession?.endTime])
 
-  // Add current site to block list
+  // Open the seal rule picker for the current tab
   const handleAddCurrentSite = async () => {
     try {
-      playSound(SoundType.BAMBOO_STRIKE)
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
       const tab = tabs[0]
-
       if (!tab?.url) return
       const host = normalizeHost(tab.url)
       if (!host) return
+      setSealHost(host)
+    } catch (err) {
+      console.error('[Popup] Error resolving current site:', err)
+      toast(t('errors.failedToAdd'), 'error')
+    }
+  }
 
-      const success = await messagingClient.addSite(host)
+  // Seal the current tab with the rule chosen in the picker
+  const handleConfirmSeal = async (schedule: Schedule) => {
+    if (!sealHost) return
+    const host = sealHost
+    try {
+      playSound(SoundType.BAMBOO_STRIKE)
+      const success = await messagingClient.addSite(host, { schedule })
       if (success) {
         setCurrentHostBlocked(true)
         await loadSitesCount()
@@ -174,6 +197,8 @@ const App: React.FC = () => {
     } catch (err) {
       console.error('[Popup] Error adding current site:', err)
       toast(t('errors.failedToAdd'), 'error')
+    } finally {
+      setSealHost(null)
     }
   }
 
@@ -513,6 +538,85 @@ const App: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {sealHost && (
+          <SealModal
+            host={sealHost}
+            onConfirm={handleConfirmSeal}
+            onCancel={() => setSealHost(null)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+interface SealModalProps {
+  host: string
+  onConfirm: (schedule: Schedule) => void
+  onCancel: () => void
+}
+
+const SealModal: React.FC<SealModalProps> = ({ host, onConfirm, onCancel }) => {
+  const [mode, setMode] = useState<ScheduleMode>(ScheduleMode.ALWAYS)
+  useEscapeKey(true, onCancel)
+
+  return (
+    <div
+      className="absolute inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="seal-modal-title"
+    >
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/70 backdrop-blur-md"
+        onClick={onCancel}
+        aria-label={t('common.cancel') || 'Cancel'}
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 12 }}
+        className="washi-card relative z-10 w-full max-w-xs p-5 shadow-[var(--shadow-float)] flex flex-col gap-4"
+        style={{ borderRadius: 'var(--radius)' }}
+      >
+        <div>
+          <div className="text-[9px] uppercase tracking-[0.35em] mb-1" style={{ color: 'var(--nezumi)' }}>
+            {t('bushido.seal')}
+          </div>
+          <h3 id="seal-modal-title" className="font-mono text-sm truncate" style={{ color: 'var(--text)' }}>
+            {host}
+          </h3>
+        </div>
+
+        <BushidoSelect
+          label={t('schedule.scheduleMode')}
+          value={mode}
+          onChange={val => setMode(val as ScheduleMode)}
+          options={[
+            { value: ScheduleMode.ALWAYS, label: t('schedule.alwaysBlock') },
+            { value: ScheduleMode.WORK_HOURS, label: t('schedule.workHours') },
+            { value: ScheduleMode.WEEKENDS, label: t('schedule.weekendsOnly') },
+            { value: ScheduleMode.CUSTOM, label: t('schedule.customSchedule') },
+          ]}
+        />
+
+        <div className="flex gap-3 pt-1">
+          <button className="btn secondary flex-1" onClick={onCancel}>
+            {t('common.cancel')}
+          </button>
+          <button
+            className="btn primary flex-1 shadow-lantern"
+            onClick={() => onConfirm(buildSealSchedule(mode))}
+          >
+            {t('bushido.seal')}
+          </button>
+        </div>
+      </motion.div>
     </div>
   )
 }
