@@ -421,16 +421,35 @@ async function handleHistoryStateUpdate(
 // level of the service worker script. Registering inside an async init() means
 // Chrome can replay events (onInstalled, onStartup) before the listeners exist
 // and silently drop them. Keep all addListener() calls here, eagerly.
+//
+// Each registration is isolated: Safari does not implement every event the
+// way Chrome does (e.g. parts of webNavigation), and a missing API surfaces as
+// an undefined `.addListener`. Run each one independently so one unsupported
+// event can't abort the whole sync block and leave the SW with NO listeners
+// (which manifests as the popup hanging on every sendMessage).
 console.log('[Background] Registering listeners (sync)…')
-initializeMessageHandlers()
-initializeAlarmHandlers()
-initializeStorageListener()
-browser.runtime.onInstalled.addListener(handleInstalled)
-browser.runtime.onStartup.addListener(handleStartup)
-browser.action.onClicked.addListener(handleActionClick)
-browser.tabs.onUpdated.addListener(handleTabUpdate)
-browser.webNavigation.onErrorOccurred.addListener(handleNavigationError)
-browser.webNavigation.onHistoryStateUpdated.addListener(handleHistoryStateUpdate)
+
+function safeRegister(label: string, register: () => void): void {
+  try {
+    register()
+  } catch (err) {
+    console.warn(`[Background] Listener "${label}" not registered (unsupported in this browser?):`, err)
+  }
+}
+
+safeRegister('messageHandlers', () => initializeMessageHandlers())
+safeRegister('alarmHandlers', () => initializeAlarmHandlers())
+safeRegister('storageListener', () => initializeStorageListener())
+safeRegister('runtime.onInstalled', () => browser.runtime.onInstalled.addListener(handleInstalled))
+safeRegister('runtime.onStartup', () => browser.runtime.onStartup.addListener(handleStartup))
+safeRegister('action.onClicked', () => browser.action.onClicked.addListener(handleActionClick))
+safeRegister('tabs.onUpdated', () => browser.tabs.onUpdated.addListener(handleTabUpdate))
+safeRegister('webNavigation.onErrorOccurred', () =>
+  browser.webNavigation.onErrorOccurred.addListener(handleNavigationError)
+)
+safeRegister('webNavigation.onHistoryStateUpdated', () =>
+  browser.webNavigation.onHistoryStateUpdated.addListener(handleHistoryStateUpdate)
+)
 
 // Best-effort startup work after listeners are registered. Failures here must
 // not prevent listeners from servicing events.
