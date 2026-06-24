@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { messagingClient } from '../shared/messaging/client'
-import { normalizeHost } from '../shared/utils/domain'
+import { normalizeHost, subdomainRoot } from '../shared/utils/domain'
 import { t, setLanguage, initI18n } from '../shared/i18n'
 import { useLanguage } from '../shared/i18n/useLanguage'
 import type { SiteObject } from '../shared/storage/schemas'
@@ -19,6 +19,7 @@ import {
   LayoutIcon,
   FlameIcon,
   ShieldIcon,
+  GlobeIcon,
 } from '../shared/components/Icons'
 import type { Stats } from '../shared/domain/stats'
 import type { AchievementsData } from '../shared/domain/achievements'
@@ -101,6 +102,11 @@ const App: React.FC = () => {
   }, [])
   const [loading, setLoading] = useState<boolean>(true)
   const [newSiteInput, setNewSiteInput] = useState<string>('')
+  // Rotating-subdomain suggestion: offer to block the whole registrable domain
+  const [pendingBroaden, setPendingBroaden] = useState<{
+    specific: string
+    root: string
+  } | null>(null)
   const [bulkSitesInput, setBulkSitesInput] = useState<string>('')
   const [selectedSites, setSelectedSites] = useState<Set<string>>(new Set())
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
@@ -194,6 +200,25 @@ const App: React.FC = () => {
     }
   }
 
+  // Commit a host to the block list, carrying over the staged schedule/rules.
+  const commitAddSite = async (host: string) => {
+    try {
+      await messagingClient.addSite(host, {
+        schedule: newSiteSchedule,
+        conditionalRules: newSiteRules.length > 0 ? newSiteRules : undefined,
+      })
+      setNewSiteInput('')
+      setNewSiteSchedule(null)
+      setNewSiteRules([])
+      setPendingBroaden(null)
+      await loadSites()
+      toast(`${host} ${t('common.added')}`, 'success')
+    } catch (err) {
+      console.error('[Options] Error adding site:', err)
+      toast(t('errors.failedToAdd'), 'error')
+    }
+  }
+
   const handleAddSite = async () => {
     const host = normalizeHost(newSiteInput)
     if (!host) {
@@ -206,18 +231,38 @@ const App: React.FC = () => {
       return
     }
 
+    // If the host carries a rotating-style subdomain and the root domain isn't
+    // already blocked, suggest broadening to the whole domain instead of adding
+    // the specific subdomain (which would be bypassed when the subdomain rotates).
+    const root = subdomainRoot(host)
+    if (root && !sites.some(s => s.host === root)) {
+      setPendingBroaden({ specific: host, root })
+      return
+    }
+
+    await commitAddSite(host)
+  }
+
+  // Broaden an existing entry to its registrable root domain, preserving metadata.
+  const handleBroadenSite = async (site: SiteObject) => {
+    const root = subdomainRoot(site.host)
+    if (!root) return
     try {
-      await messagingClient.addSite(host, {
-        schedule: newSiteSchedule,
-        conditionalRules: newSiteRules.length > 0 ? newSiteRules : undefined,
-      })
-      setNewSiteInput('')
-      setNewSiteSchedule(null)
-      setNewSiteRules([])
+      if (!sites.some(s => s.host === root)) {
+        await messagingClient.addSite(root, {
+          category: site.category,
+          schedule: site.schedule,
+          conditionalRules:
+            site.conditionalRules && site.conditionalRules.length > 0
+              ? site.conditionalRules
+              : undefined,
+        })
+      }
+      await messagingClient.removeSite(site.host)
       await loadSites()
-      toast(`${host} ${t('common.added')}`, 'success')
+      toast(t('options.broadenedToast', { root }), 'success')
     } catch (err) {
-      console.error('[Options] Error adding site:', err)
+      console.error('[Options] Error broadening site:', err)
       toast(t('errors.failedToAdd'), 'error')
     }
   }
@@ -670,7 +715,7 @@ const App: React.FC = () => {
 
         <AnimatePresence>
           {pendingAction && (
-            <div className="fixed inset-0 z-50">
+            <div className="fixed inset-0 z-[200]">
               <ChallengeModal
                 isOpen={true}
                 onClose={() => setPendingAction(null)}
@@ -769,6 +814,39 @@ const App: React.FC = () => {
                     {t('options.addButton')}
                   </button>
                 </div>
+
+                {pendingBroaden && (
+                  <div className="mb-6 rounded-lg border border-accent/30 bg-accent/5 p-4">
+                    <div className="flex items-start gap-3">
+                      <GlobeIcon className="w-5 h-5 text-accent mt-0.5 shrink-0" />
+                      <div className="flex-1">
+                        <div className="font-medium text-sm text-sumi-black">
+                          {t('options.broadenSuggestTitle')}
+                        </div>
+                        <p className="text-sm text-sumi-gray mt-1">
+                          {t('options.broadenSuggestBody', {
+                            specific: pendingBroaden.specific,
+                            root: pendingBroaden.root,
+                          })}
+                        </p>
+                        <div className="flex gap-3 mt-3">
+                          <button
+                            className="btn primary px-4 py-1.5 text-sm"
+                            onClick={() => commitAddSite(pendingBroaden.root)}
+                          >
+                            {t('options.broadenWholeDomain')}
+                          </button>
+                          <button
+                            className="px-4 py-1.5 text-sm rounded-lg border border-border text-sumi-gray hover:bg-black/5 transition-colors"
+                            onClick={() => commitAddSite(pendingBroaden.specific)}
+                          >
+                            {t('options.broadenOnlyThis')}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex gap-4 border-t border-border/30 pt-6">
                   <button
@@ -964,6 +1042,20 @@ const App: React.FC = () => {
                           >
                             <ShuffleIcon size={16} />
                           </button>
+                          {(() => {
+                            const root = subdomainRoot(site.host)
+                            if (!root || sites.some(s => s.host === root)) return null
+                            return (
+                              <button
+                                onClick={() => handleBroadenSite(site)}
+                                title={t('options.broadenButtonTitle', { root })}
+                                aria-label={`Block whole domain ${root}`}
+                                className="focus-ring w-8 h-8 flex items-center justify-center rounded-full hover:bg-accent/10 hover:text-accent text-sumi-gray transition-colors"
+                              >
+                                <GlobeIcon size={16} />
+                              </button>
+                            )
+                          })()}
                           <div className="w-px h-4 bg-border mx-1"></div>
                           <button
                             onClick={() => handleRemoveSite(site.host)}

@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   Download,
   RefreshCw,
+  Globe,
   type LucideProps,
 } from 'lucide-react'
 
@@ -52,6 +53,7 @@ export const MailIcon = Mail
 export const AlertTriangleIcon = AlertTriangle
 export const DownloadIcon = Download
 export const RefreshcwIcon = RefreshCw
+export const GlobeIcon = Globe
 
 // Standardized Custom Icons that match Lucide style
 // Default stroke width: 1.5px (Lucide default is 2px, but we can override or match)

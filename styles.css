@@ -221,6 +221,25 @@ a:hover {
   cursor: not-allowed;
 }
 
+.bushido-input {
+  @apply w-full px-4 py-2.5 text-sm transition-all;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--kinari);
+  outline: none;
+}
+
+.bushido-input::placeholder {
+  color: var(--nezumi);
+  opacity: 0.55;
+}
+
+.bushido-input:focus {
+  border-color: var(--akabeni);
+  box-shadow: 0 0 0 2px rgba(184,46,46,0.18), inset 0 1px 0 rgba(212,175,55,0.06);
+}
+
 .focus-ring:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--bg1), 0 0 0 4px var(--akabeni);
