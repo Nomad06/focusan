@@ -1,6 +1,6 @@
 {
   "name": "focusan",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "type": "module",
   "description": "Bushidō for your browser. Cut distractions with calm focus and samurai resolve — schedules, daily limits, Pomodoro sessions.",
   "scripts": {
