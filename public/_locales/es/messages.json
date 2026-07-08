@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Focusan - 集中",
+    "description": "Name of the extension"
+  },
+  "extensionDescription": {
+    "message": "Bushidō para tu navegador. Elimina las distracciones con un enfoque tranquilo y la determinación del samurái: horarios, límites diarios y sesiones Pomodoro.",
+    "description": "Description of the extension"
+  }
+}

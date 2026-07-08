@@ -5,16 +5,17 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import type { BushidoPhrase } from '../../../shared/bushido-phrases'
+import { BushidoPhrase, getPhraseMeaning, getPhraseMessage } from '../../../shared/bushido-phrases'
+import type { Language } from '../../../shared/i18n/translations'
 
 interface BushidoCardProps {
   phrase: BushidoPhrase
-  language: 'en' | 'ru'
+  language: Language
 }
 
 export const BushidoCard: React.FC<BushidoCardProps> = ({ phrase, language }) => {
-  const meaning = language === 'ru' ? phrase.meaningRu : phrase.meaning
-  const message = language === 'ru' ? phrase.messageRu : phrase.message
+  const meaning = getPhraseMeaning(phrase, language)
+  const message = getPhraseMessage(phrase, language)
 
   const container = {
     hidden: { opacity: 0 },

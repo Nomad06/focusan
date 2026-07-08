@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Focusan - 集中",
+    "description": "Name of the extension"
+  },
+  "extensionDescription": {
+    "message": "为您浏览器打造的武士道。以平静的专注和武士的坚韧消除分心 —— 日程表、每日限制、番茄钟工作法。",
+    "description": "Description of the extension"
+  }
+}

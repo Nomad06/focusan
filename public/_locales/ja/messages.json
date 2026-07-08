@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Focusan - 集中",
+    "description": "Name of the extension"
+  },
+  "extensionDescription": {
+    "message": "ブラウザのための武士道。穏やかな集中と侍の決意で気を散らすものを排除します — スケジュール、1日の制限、ポモドーロセッション。",
+    "description": "Description of the extension"
+  }
+}

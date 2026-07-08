@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Focusan - 集中",
+    "description": "Name of the extension"
+  },
+  "extensionDescription": {
+    "message": "Bushidō für deinen Browser. Blende Ablenkungen mit ruhigem Fokus und Samurai-Entschlossenheit aus – Zeitpläne, tägliche Limits und Pomodoro-Sitzungen.",
+    "description": "Description of the extension"
+  }
+}

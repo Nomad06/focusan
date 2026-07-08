@@ -4,15 +4,16 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import type { BushidoQuote } from '../../../shared/bushido-phrases'
+import { BushidoQuote, getQuoteText } from '../../../shared/bushido-phrases'
+import type { Language } from '../../../shared/i18n/translations'
 
 interface QuoteFooterProps {
   quote: BushidoQuote
-  language: 'en' | 'ru'
+  language: Language
 }
 
 export const QuoteFooter: React.FC<QuoteFooterProps> = ({ quote, language }) => {
-  const text = language === 'ru' ? quote.textRu : quote.text
+  const text = getQuoteText(quote, language)
 
   return (
     <motion.div

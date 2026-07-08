@@ -15,7 +15,7 @@ export async function initI18n(): Promise<void> {
   try {
     // Try to get saved language
     const saved = await getLanguage()
-    if (saved && (saved === 'ru' || saved === 'en')) {
+    if (saved && Object.keys(translations).includes(saved)) {
       currentLanguage = saved as Language
       return
     }
@@ -24,6 +24,18 @@ export async function initI18n(): Promise<void> {
     const browserLang = navigator.language.toLowerCase()
     if (browserLang.startsWith('ru')) {
       currentLanguage = 'ru'
+    } else if (browserLang.startsWith('es')) {
+      currentLanguage = 'es'
+    } else if (browserLang.startsWith('de')) {
+      currentLanguage = 'de'
+    } else if (browserLang.startsWith('fr')) {
+      currentLanguage = 'fr'
+    } else if (browserLang.startsWith('ja')) {
+      currentLanguage = 'ja'
+    } else if (browserLang.startsWith('zh')) {
+      currentLanguage = 'zh'
+    } else if (browserLang.startsWith('pt')) {
+      currentLanguage = 'pt'
     } else {
       currentLanguage = 'en'
     }

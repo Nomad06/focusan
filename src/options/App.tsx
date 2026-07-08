@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { messagingClient } from '../shared/messaging/client'
 import { normalizeHost, subdomainRoot } from '../shared/utils/domain'
-import { t, setLanguage, initI18n } from '../shared/i18n'
+import { t, setLanguage, initI18n, type Language } from '../shared/i18n'
 import { useLanguage } from '../shared/i18n/useLanguage'
 import type { SiteObject } from '../shared/storage/schemas'
 import {
@@ -532,7 +532,7 @@ const App: React.FC = () => {
 
   const handleLanguageChange = async (lang: string) => {
     try {
-      await setLanguage(lang as 'ru' | 'en')
+      await setLanguage(lang as Language)
     } catch (err) {
       console.error('[Options] Error changing language:', err)
     }

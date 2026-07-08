@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import browser from 'webextension-polyfill'
 import { getLanguage } from '../storage/storage'
-import type { Language } from './translations'
+import { translations, type Language } from './translations'
 
 /**
  * Hook to get current language with reactive updates
@@ -22,12 +22,19 @@ export function useLanguage(): Language {
     const loadLanguage = async () => {
       try {
         const saved = await getLanguage()
-        if (mounted && saved && (saved === 'ru' || saved === 'en')) {
+        if (mounted && saved && Object.keys(translations).includes(saved)) {
           setLanguage(saved as Language)
         } else if (mounted) {
           // Auto-detect from browser
           const browserLang = navigator.language.toLowerCase()
-          setLanguage(browserLang.startsWith('ru') ? 'ru' : 'en')
+          if (browserLang.startsWith('ru')) setLanguage('ru')
+          else if (browserLang.startsWith('es')) setLanguage('es')
+          else if (browserLang.startsWith('de')) setLanguage('de')
+          else if (browserLang.startsWith('fr')) setLanguage('fr')
+          else if (browserLang.startsWith('ja')) setLanguage('ja')
+          else if (browserLang.startsWith('zh')) setLanguage('zh')
+          else if (browserLang.startsWith('pt')) setLanguage('pt')
+          else setLanguage('en')
         }
       } catch (err) {
         console.error('[useLanguage] Error loading language:', err)
@@ -45,8 +52,8 @@ export function useLanguage(): Language {
       areaName: string
     ) => {
       if ((areaName === 'sync' || areaName === 'local') && changes['i18n_language']) {
-        const newLang = changes['i18n_language'].newValue
-        if (newLang && (newLang === 'ru' || newLang === 'en')) {
+        const newLang = changes['i18n_language'].newValue as string
+        if (newLang && Object.keys(translations).includes(newLang)) {
           console.log('[useLanguage] Language changed to:', newLang)
           const validLang = newLang as Language
           // Sync global state immediately so t() works in the upcoming render
